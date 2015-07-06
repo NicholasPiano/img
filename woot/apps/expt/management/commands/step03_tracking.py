@@ -8,6 +8,7 @@ from apps.img.models import Composite
 from apps.expt.util import *
 
 # util
+import os
 from optparse import make_option
 
 ### Command
@@ -59,22 +60,22 @@ class Command(BaseCommand):
     composite = Composite.objects.get(experiment__name=options['expt'], series__name=options['series'])
 
     # 2. check track directory and make tracks
-    file_list = [file_name for file_name in os.listdir(experiment.track_path) if '.csv' in file_name]
+    file_list = [file_name for file_name in os.listdir(composite.experiment.track_path) if '.csv' in file_name]
 
     for file_name in file_list:
       # get template
-      template = experiment.templates.get(name='track')
+      template = composite.experiment.templates.get(name='track')
 
       # check series name and load
       dict = template.dict(file_name)
       if dict['series']==series.name:
-        with open(os.path.join(experiment.track_path, file_name), 'r') as track_file:
+        with open(os.path.join(composite.experiment.track_path, file_name), 'r') as track_file:
 
           tracks = {} # stores list of tracks that can then be put into the database
 
           lines = track_file.readlines()
           for i, line in enumerate(lines): # omit title line and final blank line
-            print('step07 | reading tracks and markers from {} for {}.{}: ({}/{})'.format(file_name, experiment.name, series.name, i+1, len(lines)))
+            print('step07 | reading tracks and markers from {} for {}.{}: ({}/{})'.format(file_name, composite.experiment.name, series.name, i+1, len(lines)))
             line = line.split(',')
 
             # details
@@ -90,10 +91,10 @@ class Command(BaseCommand):
 
           for track_id, markers in tracks.items():
             track_index = series.tracks.filter(track_id=track_id).count()
-            track, track_created = series.tracks.get_or_create(experiment=experiment, series=series, track_id=track_id, index=track_index)
+            track, track_created = series.tracks.get_or_create(experiment=composite.experiment, series=series, track_id=track_id, index=track_index)
 
             if track_created:
               for marker in markers:
-                track.markers.create(experiment=series.experiment, series=series, r=marker[0], c=marker[1], t=marker[2])
+                track.markers.create(experiment=composite.experiment, series=series, r=marker[0], c=marker[1], t=marker[2])
 
     # 3. prompt user for tracking interface
