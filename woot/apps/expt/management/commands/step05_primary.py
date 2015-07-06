@@ -56,6 +56,6 @@ class Command(BaseCommand):
     mod = composite.mods.create(id_token=generate_id_token('img', 'Mod'), algorithm='mod_primary')
 
     # 3. Run mod
-    print('step05 | processing mod_regions...')
+    print('step05 | processing mod_primary...')
     mod.run()
-    print('step05 | processing mod_regions... done.')
+    print('step05 | processing mod_primary... done.')
