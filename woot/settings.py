@@ -3,14 +3,14 @@
 # django
 
 # util
+import os
 from datetime import timedelta
 from os import mkdir
 from os.path import abspath, basename, dirname, join, normpath, exists
 from sys import path
 import string
-
-# util
-
+import json
+import sys
 
 ########## TEST CONFIGURATION
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
@@ -31,13 +31,13 @@ ALLOWED_HOSTS = (
 
 ########## PATH CONFIGURATION
 # Absolute filesystem path to the Django project directory:
-DJANGO_ROOT = dirname(dirname(abspath(__file__)))
+DJANGO_ROOT = dirname(abspath(__file__))
 
 # Absolute filesystem path to the top-level project folder:
 SITE_ROOT = dirname(DJANGO_ROOT)
 
 # Site name:
-SITE_NAME = basename(DJANGO_ROOT)
+SITE_NAME = basename(dirname(DJANGO_ROOT))
 
 # Add our project to our pythonpath, this way we don't need to type our project
 # name in our dotted import paths:
@@ -47,7 +47,7 @@ path.append(DJANGO_ROOT)
 
 ########## PASSWORD CONFIGURATION
 ACCESS_ROOT = '/.djaccess/'
-DB_ACCESS = 'db.json'
+DB_ACCESS = 'img_db.json'
 ########## END PASSWORD CONFIGURATION
 
 
@@ -217,7 +217,7 @@ THIRD_PARTY_APPS = (
 )
 
 LOCAL_APPS = (
-
+  'apps.users',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -321,21 +321,22 @@ FILE_UPLOAD_HANDLERS = (
 
 ########## DATABASE CONFIGURATION
 # load database details from database config file
+db = {}
 if os.path.exists(os.path.join(ACCESS_ROOT, DB_ACCESS)):
   with open(os.path.join(ACCESS_ROOT, DB_ACCESS)) as db_json:
+    db = json.load(db_json)
 else:
-  if os.path.exists(ACCESS_ROOT):
-    
-
+  print('Database access not defined. Please check {}'.format(os.path.join(ACCESS_ROOT, DB_ACCESS)))
+  sys.exit()
 
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    'NAME': '',
-    'USER': '',
-    'PASSWORD': '',
-    'HOST': '', # Set to empty string for localhost.
-    'PORT': '', # Set to empty string for default.
+    'NAME': db['name'],
+    'USER': db['user'],
+    'PASSWORD': db['pwd'],
+    'HOST': db['host'], # Set to empty string for localhost.
+    'PORT': db['port'], # Set to empty string for default.
   }
 }
 ########## END DATABASE CONFIGURATION
