@@ -5,6 +5,7 @@ django>=1.7
 Pillow
 scipy
 pandas
+matplotlib
 
 # Common Django reusable apps
 Sphinx

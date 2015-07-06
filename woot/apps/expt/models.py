@@ -205,13 +205,13 @@ class Series(models.Model):
             # sub gon
             sub_gon, sub_gon_created = self.gons.get_or_create(experiment=self.experiment, gon=gon, channel=composite_channel, template=template, t=t, z=z)
             if sub_gon_created:
-              print('step01 | composing {} series {}... channel {} t{} z{}... created.           '.format(self.experiment.name, self.name, channel.name, t, z), end='\r')
+              print('step01 | composing {} series {}... channel {} t{} z{}... created.           '.format(self.experiment.name, self.name, channel.name, t, z))
               sub_gon.set_origin(0,0,z,t)
               sub_gon.set_extent(self.rs, self.cs, 1)
               sub_gon.paths.create(composite=composite, channel=composite_channel, template=template, url=path.url, file_name=path.file_name, t=t, z=z)
 
             else:
-              print('step01 | composing {} series {}... channel {} t{} z{}... already exists.'.format(self.experiment.name, self.name, channel.name, t, z), end='\r')
+              print('step01 | composing {} series {}... channel {} t{} z{}... already exists.'.format(self.experiment.name, self.name, channel.name, t, z))
 
             sub_gon.save()
 
@@ -219,7 +219,7 @@ class Series(models.Model):
 
         else: # disfuse gon structure (reduced, regions)
           for path in path_set:
-            print('step01 | composing diffuse {} series {}... channel {} t{} z{}'.format(self.experiment.name, self.name, channel.name, t, path.z), end='\r')
+            print('step01 | composing diffuse {} series {}... channel {} t{} z{}'.format(self.experiment.name, self.name, channel.name, t, path.z))
 
             template = composite.templates.get(name=path.template.name)
             gon, gon_created = self.gons.get_or_create(experiment=self.experiment, composite=composite, channel=composite_channel, template=template, t=t, z=path.z)
