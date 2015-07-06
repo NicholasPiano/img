@@ -189,6 +189,7 @@ class Marker(models.Model):
   confidence = models.FloatField(default=0.0) # value between -1.0 and 1.0
 
   # methods
+  
 
 class Mask(models.Model):
   # connections

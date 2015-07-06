@@ -42,6 +42,8 @@ SITE_NAME = basename(dirname(DJANGO_ROOT))
 # Add our project to our pythonpath, this way we don't need to type our project
 # name in our dotted import paths:
 path.append(DJANGO_ROOT)
+
+DATA_ROOT = '/Volumes/transport/data/puzzle/'
 ########## END PATH CONFIGURATION
 
 
