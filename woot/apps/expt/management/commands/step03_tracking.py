@@ -1,4 +1,4 @@
-# expt.command: step03_pmod
+# expt.command: step03_tracking
 
 # django
 from django.core.management.base import BaseCommand, CommandError
@@ -68,15 +68,15 @@ class Command(BaseCommand):
 
       # check series name and load
       dict = template.dict(file_name)
-      if dict['series']==series.name:
+      if dict['series']==composite.series.name:
         with open(os.path.join(composite.experiment.track_path, file_name), 'r') as track_file:
 
           tracks = {} # stores list of tracks that can then be put into the database
 
           lines = track_file.readlines()
           for i, line in enumerate(lines): # omit title line and final blank line
-            print('step07 | reading tracks and markers from {} for {}.{}: ({}/{})'.format(file_name, composite.experiment.name, series.name, i+1, len(lines)))
-            line = line.split(',')
+            print('step03 | reading tracks and markers from {} for {}.{}: ({}/{})'.format(file_name, composite.experiment.name, composite.series.name, i+1, len(lines)))
+            line = line.split('\t')
 
             # details
             track_id = int(float(line[0]))
@@ -90,11 +90,11 @@ class Command(BaseCommand):
               tracks[track_id] = [(r,c,t)]
 
           for track_id, markers in tracks.items():
-            track_index = series.tracks.filter(track_id=track_id).count()
-            track, track_created = series.tracks.get_or_create(experiment=composite.experiment, series=series, track_id=track_id, index=track_index)
+            track_index = composite.series.tracks.filter(track_id=track_id).count()
+            track, track_created = composite.series.tracks.get_or_create(experiment=composite.experiment, series=composite.series, track_id=track_id, index=track_index)
 
             if track_created:
               for marker in markers:
-                track.markers.create(experiment=composite.experiment, series=series, r=marker[0], c=marker[1], t=marker[2])
+                track.markers.create(experiment=composite.experiment, series=composite.series, r=marker[0], c=marker[1], t=marker[2])
 
     # 3. prompt user for tracking interface

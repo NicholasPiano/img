@@ -132,6 +132,7 @@ def mod_regions(composite, mod_id, algorithm):
 
   # iterate
   for t in range(composite.series.ts):
+    print(t)
     region_img = region_img_set.filter(t=t)
     if region_img.count()==0:
       region_img = region_img_set.get(t=t-1)
