@@ -6,6 +6,7 @@ Pillow
 scipy
 pandas
 matplotlib
+scikit-image
 
 # Common Django reusable apps
 Sphinx
