@@ -193,7 +193,7 @@ def mod_primary(composite, mod_id, algorithm):
     primary = np.zeros(composite.series.shape(d=2))
 
     for marker in markers:
-      primary[marker.c-3:marker.c+2, marker.r-3:marker.r+2] = 255
+      primary[marker.r-3:marker.r+2, marker.c-3:marker.c+2] = 255
 
     # make blank image and print dots
     gon = composite.gons.create(experiment=composite.experiment, series=composite.series, channel=channel, template=template)
@@ -203,5 +203,5 @@ def mod_primary(composite, mod_id, algorithm):
 
     gon.array = primary.copy()
 
-    gon.save_mask(composite.experiment.composite_path)
+    gon.save_array(composite.experiment.composite_path, template)
     gon.save()
