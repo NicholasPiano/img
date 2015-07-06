@@ -1,4 +1,4 @@
-# expt.command: step05_cp
+# expt.command: step06_cp
 
 # django
 from django.core.management.base import BaseCommand, CommandError

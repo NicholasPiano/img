@@ -176,3 +176,32 @@ def mod_regions(composite, mod_id, algorithm):
       mask = region_gon.masks.create(composite=composite, channel=region_channel, mask_id=unique_value)
       mask.set_origin(r,c,0)
       mask.set_extent(rs,cs)
+
+def mod_primary(composite, mod_id, algorithm):
+  # paths
+  template = composite.templates.get(name='source') # SOURCE TEMPLATE
+
+  # channel
+  channel, channel_created = composite.channels.get_or_create(name='-primary')
+
+  # iterate
+  for t in range(composite.series.ts):
+    print(t)
+
+    # get markers
+    markers = composite.experiment.markers.filter(t=t)
+    primary = np.zeros(composite.series.shape(d=2))
+
+    for marker in markers:
+      primary[marker.c-3:marker.c+2, marker.r-3:marker.r+2] = 255
+
+    # make blank image and print dots
+    gon = composite.gons.create(experiment=composite.experiment, series=composite.series, channel=channel, template=template)
+    gon.id_token = generate_id_token('img','Gon')
+    gon.set_origin(0,0,0,t)
+    gon.set_extent(composite.series.rs,composite.series.cs,1)
+
+    gon.array = primary.copy()
+
+    gon.save_mask(composite.experiment.composite_path)
+    gon.save()
