@@ -15,6 +15,7 @@ from scipy.misc import imread, imsave, toimage
 import numpy as np
 
 ### Models
+# http://stackoverflow.com/questions/19695249/load-just-part-of-an-image-in-python
 class Composite(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='composites')

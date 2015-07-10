@@ -219,7 +219,7 @@ THIRD_PARTY_APPS = (
 )
 
 LOCAL_APPS = (
-  'apps.cell',
+  # 'apps.cell',
   'apps.expt',
   'apps.img',
   'apps.users',
@@ -333,6 +333,10 @@ if os.path.exists(os.path.join(ACCESS_ROOT, DB_ACCESS)):
 else:
   print('Database access not defined. Please check {}'.format(os.path.join(ACCESS_ROOT, DB_ACCESS)))
   sys.exit()
+
+# 1. start database server: ~$ pg_ctl start -D /usr/local/var/postgres/
+# 2. connect to database: ~$ psql -U nicholaspiano postgres
+# 3. check database server: ~$ pg_ctl status -D /usr/local/var/postgres/
 
 DATABASES = {
   'default': {
