@@ -49,6 +49,9 @@ class CellInstance(models.Model):
   region = models.ForeignKey(Region, related_name='cell_instances', null=True)
   gon = models.OneToOneField(Gon, related_name='cell_instance', null=True)
 
+  # mask
+  gray_value = models.IntegerField(default=0)
+
   # properties
   r = models.IntegerField(default=0)
   c = models.IntegerField(default=0)
@@ -177,57 +180,9 @@ class Marker(models.Model):
   series = models.ForeignKey(Series, related_name='markers')
   track = models.ForeignKey(Track, related_name='markers')
   region = models.ForeignKey(Region, related_name='markers', null=True)
-  gon = models.OneToOneField(Gon, related_name='marker', null=True)
 
   # properties
   r = models.IntegerField(default=0)
   c = models.IntegerField(default=0)
   z = models.IntegerField(default=0)
   t = models.IntegerField(default=0)
-
-  #- categorisation
-  confidence = models.FloatField(default=0.0) # value between -1.0 and 1.0
-
-  # methods
-  
-
-class Mask(models.Model):
-  # connections
-  composite = models.ForeignKey(Composite, related_name='masks')
-  channel = models.ForeignKey(Channel, related_name='masks')
-  gon = models.ForeignKey(Gon, related_name='masks')
-
-  # properties
-  mask_id = models.IntegerField(default=0)
-
-  # 1. origin
-  r = models.IntegerField(default=0)
-  c = models.IntegerField(default=0)
-  z = models.IntegerField(default=0)
-
-  # 2. extent
-  rs = models.IntegerField(default=-1)
-  cs = models.IntegerField(default=-1)
-
-  # 3. gfp
-  max_z = models.IntegerField(default=0)
-  mean = models.FloatField(default=0.0)
-  std = models.FloatField(default=0.0)
-
-  # methods
-  def set_origin(self, r, c, z):
-    self.r = r
-    self.c = c
-    self.z = z
-    self.save()
-
-  def set_extent(self, rs, cs):
-    self.rs = rs
-    self.cs = cs
-    self.save()
-
-  def set_gfp(self, max_z, mean, std):
-    self.max_z = max_z
-    self.mean = mean
-    self.std = std
-    self.save()
