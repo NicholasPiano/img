@@ -149,10 +149,6 @@ templates = {
     'rx':r'^(?P<experiment>.+)_s(?P<series>.+)_ch-(?P<channel>.+)_t(?P<t>[0-9]+)_z(?P<z>[0-9]+)_cp-(?P<secondary_channel>.+)\.(?P<extension>.+)$',
     'rv':r'{}_s{}_ch-{}_t{}_z{}_cp-{}.tiff',
   },
-  'mask':{
-    'rx':r'^(?P<id_token>[A-Z0-9]{8})\.(?P<extension>.+)$',
-    'rv':r'{}.tiff',
-  },
   'track':{
     'rx':r'^(?P<experiment>.+)_s(?P<series>.+)_n(?P<index>[0-9]+)\.csv$',
     'rv':r'{}_s{}_{}.csv',
@@ -167,9 +163,6 @@ default_paths = {
   'region_img':'img/region-img/',
   'region':'img/region/',
   'cp':'img/cp/',
-  'mask':'img/mask/',
-  'sub_mask':'img/sub-mask/',
-  'cp2':'img/cp2/',
 
   'output':'img/output/',
   'plot':'plot/',

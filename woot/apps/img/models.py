@@ -121,16 +121,6 @@ class Gon(models.Model):
         gon.save_array(self.experiment.composite_path, template)
         gon.save()
 
-  def load_mask(self):
-    pass
-
-  def save_mask(self, root):
-    template = self.gon.composite.templates.get(name='mask')
-    file_name = template.rv.format(self.id_token)
-    url = os.path.join(root, file_name)
-    imsave(url, self.array)
-    self.paths.create(composite=self.gon.composite, channel=self.channel, template=template, url=url, file_name=file_name, t=self.t, z=self.z)
-
 class Channel(models.Model):
   # connections
   composite = models.ForeignKey(Composite, related_name='channels')

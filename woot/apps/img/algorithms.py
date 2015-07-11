@@ -122,7 +122,6 @@ def mod_zmod(composite, mod_id, algorithm):
 def mod_regions(composite, mod_id, algorithm):
   # paths
   template = composite.templates.get(name='region') # REGION TEMPLATE
-  mask_template = composite.templates.get(name='mask')
 
   # get region img set that has the region template
   region_img_set = composite.gons.filter(channel__name='-regionimg', template__name='region')
@@ -154,28 +153,7 @@ def mod_regions(composite, mod_id, algorithm):
 
     region_gon.array = region_array.copy()
     region_gon.save_array(os.path.join(composite.experiment.mask_path, composite.series.name), template)
-
-    for unique_value in [u for u in np.unique(region_array) if u>0]:
-      # 1. cut image to single value
-      unique_image = np.zeros(region_array.shape)
-      unique_image[region_array==unique_value] = 1
-      cut, (r,c,rs,cs) = cut_to_black(unique_image)
-
-      # 2. make gon with cut image and associate to gon
-      gon = region_gon.gons.create(experiment=composite.experiment, series=composite.series, channel=region_channel, template=mask_template)
-      gon.id_token = generate_id_token('img','Gon')
-      gon.set_origin(r,c,0,t)
-      gon.set_extent(rs,cs,1)
-
-      gon.array = cut.copy()
-
-      gon.save_mask(composite.experiment.sub_mask_path)
-      gon.save()
-
-      # 3. make mask with cut image and associate to gon2
-      mask = region_gon.masks.create(composite=composite, channel=region_channel, mask_id=unique_value)
-      mask.set_origin(r,c,0)
-      mask.set_extent(rs,cs)
+    region_gon.save()
 
 def mod_primary(composite, mod_id, algorithm):
   # paths

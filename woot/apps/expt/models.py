@@ -26,9 +26,6 @@ class Experiment(models.Model):
   region_img_path = models.CharField(max_length=255)
   region_path = models.CharField(max_length=255)
   cp_path = models.CharField(max_length=255)
-  mask_path = models.CharField(max_length=255)
-  sub_mask_path = models.CharField(max_length=255)
-  cp2_path = models.CharField(max_length=255)
 
   output_path = models.CharField(max_length=255)
   plot_path = models.CharField(max_length=255)
@@ -49,14 +46,11 @@ class Experiment(models.Model):
     # fetch default paths from settings
     self.base_path = base_path
     self.img_path = os.path.join(self.base_path, default_paths['img'])
-    self.tracking_path = os.path.join(self.base_path, default_paths['tracking']) # step 2
-    self.composite_path = os.path.join(self.base_path, default_paths['composite']) # step 3: pmod
-    self.region_img_path = os.path.join(self.base_path, default_paths['region_img']) # step 4
-    self.region_path = os.path.join(self.base_path, default_paths['region']) # result of step 5
-    self.cp_path = os.path.join(self.base_path, default_paths['cp']) # step 8 -> step 10
-    self.mask_path = os.path.join(self.base_path, default_paths['mask']) # result of step 10 -> step 11
-    self.sub_mask_path = os.path.join(self.base_path, default_paths['sub_mask']) # result of step 11
-    self.cp2_path = os.path.join(self.base_path, default_paths['cp2']) # step 13 -> step 14
+    self.tracking_path = os.path.join(self.base_path, default_paths['tracking'])
+    self.composite_path = os.path.join(self.base_path, default_paths['composite'])
+    self.region_img_path = os.path.join(self.base_path, default_paths['region_img'])
+    self.region_path = os.path.join(self.base_path, default_paths['region'])
+    self.cp_path = os.path.join(self.base_path, default_paths['cp'])
 
     self.output_path = os.path.join(self.base_path, default_paths['output'])
     self.plot_path = os.path.join(self.base_path, default_paths['plot'])
@@ -66,7 +60,7 @@ class Experiment(models.Model):
 
     self.save()
 
-    for path in [self.tracking_path, self.composite_path, self.region_img_path, self.region_path, self.cp_path, self.mask_path, self.sub_mask_path, self.cp2_path, self.output_path, self.plot_path, self.track_path, self.data_path, self.pipeline_path]:
+    for path in [self.tracking_path, self.composite_path, self.region_img_path, self.region_path, self.cp_path, self.output_path, self.plot_path, self.track_path, self.data_path, self.pipeline_path]:
       if not os.path.exists(path):
         os.makedirs(path)
 
