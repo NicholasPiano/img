@@ -219,7 +219,7 @@ THIRD_PARTY_APPS = (
 )
 
 LOCAL_APPS = (
-  # 'apps.cell',
+  'apps.cell',
   'apps.expt',
   'apps.img',
   'apps.users',
