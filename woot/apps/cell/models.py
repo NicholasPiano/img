@@ -15,15 +15,39 @@ from scipy.signal import find_peaks_cwt as find_peaks
 import matplotlib.pyplot as plt
 
 ### Models
+### MARKERS
+class Track(models.Model):
+  # connections
+  experiment = models.ForeignKey(Experiment, related_name='tracks')
+  series = models.ForeignKey(Series, related_name='tracks')
+
+  # properties
+  track_id = models.IntegerField(default=0)
+  index = models.IntegerField(default=0)
+
+  # methods
+
+class Marker(models.Model):
+  # connections
+  experiment = models.ForeignKey(Experiment, related_name='markers')
+  series = models.ForeignKey(Series, related_name='markers')
+  channel = models.ForeignKey(Channel, related_name='markers')
+  track = models.ForeignKey(Track, related_name='markers')
+  region = models.ForeignKey(Region, related_name='markers', null=True)
+  marker = models.ForeignKey('self', related_name='markers', null=True)
+
+  # properties
+  r = models.IntegerField(default=0)
+  c = models.IntegerField(default=0)
+  z = models.IntegerField(default=0)
+  t = models.IntegerField(default=0)
+
 ### REALITY
 class Cell(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='cells')
   series = models.ForeignKey(Series, related_name='cells')
-
-  # properties
-  cell_id = models.IntegerField(default=0)
-  cell_index = models.IntegerField(default=0)
+  track = models.OneToOneField(Track, related_name='cell')
 
   # methods
   def calculate_velocities(self):
@@ -46,8 +70,10 @@ class CellInstance(models.Model):
   experiment = models.ForeignKey(Experiment, related_name='cell_instances')
   series = models.ForeignKey(Series, related_name='cell_instances')
   cell = models.ForeignKey(Cell, related_name='cell_instances')
+  cell_instance = models.ForeignKey('self', related_name='cell_instances', null=True)
   region = models.ForeignKey(Region, related_name='cell_instances', null=True)
   gon = models.OneToOneField(Gon, related_name='cell_instance', null=True)
+  marker = models.ForeignKey(Marker, related_name='markers', null=True)
 
   # mask
   gray_value = models.IntegerField(default=0)
@@ -161,28 +187,3 @@ class CellInstance(models.Model):
                                                                                                     self.AreaShape_Orientation,
                                                                                                     self.AreaShape_Perimeter,
                                                                                                     self.AreaShape_Solidity)
-
-### MARKERS
-class Track(models.Model):
-  # connections
-  experiment = models.ForeignKey(Experiment, related_name='tracks')
-  series = models.ForeignKey(Series, related_name='tracks')
-
-  # properties
-  track_id = models.IntegerField(default=0)
-  index = models.IntegerField(default=0)
-
-  # methods
-
-class Marker(models.Model):
-  # connections
-  experiment = models.ForeignKey(Experiment, related_name='markers')
-  series = models.ForeignKey(Series, related_name='markers')
-  track = models.ForeignKey(Track, related_name='markers')
-  region = models.ForeignKey(Region, related_name='markers', null=True)
-
-  # properties
-  r = models.IntegerField(default=0)
-  c = models.IntegerField(default=0)
-  z = models.IntegerField(default=0)
-  t = models.IntegerField(default=0)
