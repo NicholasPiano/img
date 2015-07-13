@@ -67,24 +67,24 @@ class Command(BaseCommand):
 
     if os.path.exists(os.path.join(base_path, experiment_name)):
       # 1. create experiment
-      print('step01 | experiment path exists, experiment {}... '.format(experiment_name))
+      print('step01 | experiment path exists, experiment {}... '.format(experiment_name), end='\r')
       experiment, experiment_created = Experiment.objects.get_or_create(name=experiment_name)
       if experiment_created:
         # set metadata
         experiment.make_paths(os.path.join(base_path, experiment.name))
         experiment.get_metadata()
-        print('created.')
+        print('step01 | experiment path exists, experiment {}...  created.'.format(experiment_name))
       else:
-        print('already exists.')
+        print('step01 | experiment path exists, experiment {}... already exists.'.format(experiment_name))
 
       # 2. create series
       if experiment.is_allowed_series(series_name):
-        print('step01 | series {}... '.format(series_name))
+        print('step01 | series {}... '.format(series_name), end='\r')
         series, series_created = experiment.series.get_or_create(name=series_name)
         if series_created:
-          print('created.')
+          print('step01 | series {}... created.'.format(series_name))
         else:
-          print('already exists.')
+          print('step01 | series {}... already exists.'.format(series_name))
 
         # 3. for each path in the experiment folder, create new path if the series matches.
         for root in experiment.img_roots():
@@ -95,7 +95,7 @@ class Command(BaseCommand):
           if num_img_files>0:
             for i, file_name in enumerate(img_files):
               path, path_created, path_message = experiment.get_or_create_path(series, root, file_name)
-              print('step01 | adding image files in {}: ({}/{}) {} ...path {}                    '.format(root, i+1, num_img_files, file_name, path_message))
+              print('step01 | adding image files in {}: ({}/{}) {} ...path {}                    '.format(root, i+1, num_img_files, file_name, path_message), end='\r' if i<num_img_files-1 else '\n')
 
           else:
             print('step01 | no files found in {}'.format(root))
@@ -118,7 +118,7 @@ class Command(BaseCommand):
         series.compose()
 
         # 6. create regions
-        print('step01 | creating regions for {} series {}...                        '.format(experiment_name, series_name))
+        print('step01 | creating regions for {} series {}...                        '.format(experiment_name, series_name), end='\r')
         for region_prototype in list(filter(lambda rp: rp.experiment==experiment_name and rp.series==series_name, regions)):
           region, region_created = series.regions.get_or_create(experiment=experiment, name=region_prototype.name)
           if region_created:
