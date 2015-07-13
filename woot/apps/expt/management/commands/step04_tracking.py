@@ -10,6 +10,7 @@ from apps.expt.util import *
 # util
 import os
 from optparse import make_option
+import numpy as np
 
 ### Command
 class Command(BaseCommand):
@@ -97,4 +98,21 @@ class Command(BaseCommand):
               for marker in markers:
                 track.markers.create(experiment=composite.experiment, series=composite.series, r=marker[0], c=marker[1], t=marker[2])
 
-    # 3. prompt user for tracking interface
+    # 3. determine region of each marker
+    for t in range(composite.series.ts):
+      # load region image
+      region_gon = composite.gons.get(channel__name='-regions', t=t)
+      regions = region_gon.load()
+      region_indexes = list(np.unique(regions))
+
+      # get markers
+      for marker in composite.series.markers.filter(t=t):
+        r, c = marker.r, marker.c
+
+        region_index = region_indexes.index(regions[r,c])
+        true_region_index = composite.series.vertical_sort_for_region_index(region_index)
+
+        # get region object
+        region = composite.series.regions.get(index=true_region_index)
+        marker.region = region
+        marker.save()
