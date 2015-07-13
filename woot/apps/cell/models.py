@@ -73,7 +73,7 @@ class CellInstance(models.Model):
   cell_instance = models.ForeignKey('self', related_name='cell_instances', null=True)
   region = models.ForeignKey(Region, related_name='cell_instances', null=True)
   gon = models.OneToOneField(Gon, related_name='cell_instance', null=True)
-  marker = models.ForeignKey(Marker, related_name='markers', null=True)
+  marker = models.OneToOneField(Marker, related_name='cell_instance_marker')
 
   # mask
   gray_value = models.IntegerField(default=0)

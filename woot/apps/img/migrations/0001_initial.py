@@ -14,14 +14,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Channel',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('name', models.CharField(max_length=255)),
             ],
         ),
         migrations.CreateModel(
             name='Composite',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('id_token', models.CharField(max_length=8)),
                 ('experiment', models.ForeignKey(to='expt.Experiment', related_name='composites')),
                 ('series', models.ForeignKey(to='expt.Series', related_name='composites')),
@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Gon',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('id_token', models.CharField(default='', max_length=8)),
                 ('batch', models.IntegerField(default=0)),
                 ('r', models.IntegerField(default=0)),
@@ -41,16 +41,16 @@ class Migration(migrations.Migration):
                 ('cs', models.IntegerField(default=-1)),
                 ('zs', models.IntegerField(default=1)),
                 ('channel', models.ForeignKey(to='img.Channel', related_name='gons')),
-                ('composite', models.ForeignKey(null=True, to='img.Composite', related_name='gons')),
+                ('composite', models.ForeignKey(to='img.Composite', null=True, related_name='gons')),
                 ('experiment', models.ForeignKey(to='expt.Experiment', related_name='gons')),
-                ('gon', models.ForeignKey(null=True, to='img.Gon', related_name='gons')),
+                ('gon', models.ForeignKey(to='img.Gon', null=True, related_name='gons')),
                 ('series', models.ForeignKey(to='expt.Series', related_name='gons')),
             ],
         ),
         migrations.CreateModel(
             name='Mod',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('id_token', models.CharField(max_length=8)),
                 ('algorithm', models.CharField(max_length=255)),
                 ('date_created', models.DateTimeField(auto_now_add=True)),
@@ -60,7 +60,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Path',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('url', models.CharField(max_length=255)),
                 ('file_name', models.CharField(max_length=255)),
                 ('t', models.IntegerField(default=0)),
@@ -73,7 +73,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Template',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('name', models.CharField(max_length=255)),
                 ('rx', models.CharField(max_length=255)),
                 ('rv', models.CharField(max_length=255)),
@@ -88,7 +88,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='gon',
             name='template',
-            field=models.ForeignKey(null=True, to='img.Template', related_name='gons'),
+            field=models.ForeignKey(to='img.Template', null=True, related_name='gons'),
         ),
         migrations.AddField(
             model_name='channel',

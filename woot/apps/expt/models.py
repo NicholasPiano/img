@@ -23,7 +23,6 @@ class Experiment(models.Model):
   img_path = models.CharField(max_length=255)
   tracking_path = models.CharField(max_length=255)
   composite_path = models.CharField(max_length=255)
-  region_img_path = models.CharField(max_length=255)
   region_path = models.CharField(max_length=255)
   cp_path = models.CharField(max_length=255)
 
@@ -48,7 +47,6 @@ class Experiment(models.Model):
     self.img_path = os.path.join(self.base_path, default_paths['img'])
     self.tracking_path = os.path.join(self.base_path, default_paths['tracking'])
     self.composite_path = os.path.join(self.base_path, default_paths['composite'])
-    self.region_img_path = os.path.join(self.base_path, default_paths['region_img'])
     self.region_path = os.path.join(self.base_path, default_paths['region'])
     self.cp_path = os.path.join(self.base_path, default_paths['cp'])
 
@@ -60,7 +58,7 @@ class Experiment(models.Model):
 
     self.save()
 
-    for path in [self.tracking_path, self.composite_path, self.region_img_path, self.region_path, self.cp_path, self.output_path, self.plot_path, self.track_path, self.data_path, self.pipeline_path]:
+    for path in [self.tracking_path, self.composite_path, self.region_path, self.cp_path, self.output_path, self.plot_path, self.track_path, self.data_path, self.pipeline_path]:
       if not os.path.exists(path):
         os.makedirs(path)
 
@@ -85,7 +83,7 @@ class Experiment(models.Model):
     return (series_name in [s.name for s in filter(lambda x: x.experiment==self.name, series)])
 
   def img_roots(self):
-    return [self.img_path, self.tracking_path, self.composite_path, self.region_img_path, self.region_path]
+    return [self.img_path, self.tracking_path, self.composite_path, self.region_path]
 
   def path_matches_series(self, path, series_name):
 

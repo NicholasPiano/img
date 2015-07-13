@@ -160,7 +160,6 @@ default_paths = {
   'img':'img/storage/',
   'tracking':'img/tracking/',
   'composite':'img/composite/',
-  'region_img':'img/region-img/',
   'region':'img/region/',
   'cp':'img/cp/',
 
