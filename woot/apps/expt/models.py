@@ -284,3 +284,16 @@ class Template(models.Model):
 
   def dict(self, string):
     return self.match(string).groupdict()
+
+class Pipeline(models.Model):
+  # connections
+  experiment = models.ForeignKey(Experiment, related_name='pipelines')
+
+  # properties
+  name = models.CharField(max_length=255)
+  url = models.CharField(max_length=255)
+
+  # methods
+  def run(self):
+    pass
+    # run cell profiler pipeline with some options

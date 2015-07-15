@@ -5,7 +5,7 @@ from django.db import models
 
 # local
 from apps.expt.models import Experiment, Series
-from apps.img.models import Composite, Channel, Gon
+from apps.img.models import Composite, Channel, Gon, Mask
 from apps.img.util import *
 
 # util
@@ -25,20 +25,21 @@ class Track(models.Model):
 
   # properties
   track_id = models.IntegerField(default=0)
-  index = models.IntegerField(default=0)
-
-  # methods
 
 class TrackInstance(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='track_instances')
   series = models.ForeignKey(Series, related_name='track_instances')
   composite = models.ForeignKey(Composite, related_name='track_instances')
-  channel = models.ForeignKey(Channel, related_name='track_instances')
-  gon = models.ForeignKey(Gon, related_name='track_instances')
+  track = models.ForeignKey(Track, related_name='track_instances')
 
   # properties
   t = models.IntegerField(default=0)
+
+  # methods
+  def primary(self, marker_channel=None): # produce primary image of particular channel
+    pass
+    # 1. draw white square on black background
 
 class Marker(models.Model):
   # connections
@@ -63,34 +64,66 @@ class RegionTrack(models.Model):
   composite = models.ForeignKey(Composite, related_name='region_tracks')
   channel = models.ForeignKey(Channel, related_name='region_tracks')
 
-  # methods
-
 class RegionTrackInstance(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='region_track_instances')
   series = models.ForeignKey(Series, related_name='region_track_instances')
   composite = models.ForeignKey(Composite, related_name='region_track_instances')
-  channel = models.ForeignKey(Channel, related_name='region_track_instances')
-  gon = models.ForeignKey(Gon, related_name='region_track_instances')
 
   # properties
   t = models.IntegerField(default=0)
 
-class Marker(models.Model):
+  # methods
+  def primary(self, region_marker_channel=None): # make image using markers as waypoints for outer shell and fill with white
+    pass
+    # 1. draw lines between each marker in sequence to form a loop
+    # 2. fill interior with white
+
+class RegionMarker(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='region_markers')
   series = models.ForeignKey(Series, related_name='region_markers')
   composite = models.ForeignKey(Composite, related_name='region_markers')
   channel = models.ForeignKey(Channel, related_name='region_markers')
   gon = models.ForeignKey(Gon, related_name='region_markers')
-  track = models.ForeignKey(Track, related_name='region_markers')
-  track_instance = models.ForeignKey(TrackInstance, related_name='region_markers')
+  region_track = models.ForeignKey(Track, related_name='region_markers')
+  region_track_instance = models.ForeignKey(TrackInstance, related_name='region_markers')
 
   # properties
   r = models.IntegerField(default=0)
   c = models.IntegerField(default=0)
 
 ### REALITY
+## REGION
+class Region(models.Model):
+  # connections
+  experiment = models.ForeignKey(Experiment, related_name='regions')
+  series = models.ForeignKey(Series, related_name='regions')
+  region_track = models.OneToOneField(RegionTrack, related_name='regions')
+
+class RegionInstance(models.Model):
+  # connections
+  experiment = models.ForeignKey(Experiment, related_name='region_instances')
+  series = models.ForeignKey(Series, related_name='region_instances')
+  region = models.ForeignKey(Region, related_name='instances')
+
+class RegionMask(models.Model):
+  # connections
+  experiment = models.ForeignKey(Experiment, related_name='region_masks')
+  series = models.ForeignKey(Series, related_name='region_masks')
+  region = models.ForeignKey(Region, related_name='masks')
+  region_instance = models.ForeignKey(RegionInstance, related_name='masks')
+  mask = models.ForeignKey(Mask, related_name='region_masks')
+
+  # properties
+  gray_value_id = models.IntegerField(default=0)
+  area = models.IntegerField(default=0)
+
+  # methods
+  def load(self):
+    return self.mask.load()
+
+## CELL
 class Cell(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='cells')
@@ -117,14 +150,10 @@ class CellInstance(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='cell_instances')
   series = models.ForeignKey(Series, related_name='cell_instances')
-  cell = models.ForeignKey(Cell, related_name='cell_instances')
-  cell_instance = models.ForeignKey('self', related_name='cell_instances', null=True)
+  cell = models.ForeignKey(Cell, related_name='instances')
   region = models.ForeignKey(Region, related_name='cell_instances', null=True)
-  gon = models.OneToOneField(Gon, related_name='cell_instance', null=True)
-  marker = models.OneToOneField(Marker, related_name='cell_instance_marker')
-
-  # mask
-  gray_value = models.IntegerField(default=0)
+  region_instance = models.ForeignKey(RegionInstance, related_name='cell_instances', null=True)
+  track_instance = models.OneToOneField(TrackInstance, related_name='cell_instance')
 
   # properties
   r = models.IntegerField(default=0)
@@ -235,3 +264,20 @@ class CellInstance(models.Model):
                                                                                                     self.AreaShape_Orientation,
                                                                                                     self.AreaShape_Perimeter,
                                                                                                     self.AreaShape_Solidity)
+
+class CellMask(models.Model):
+  # connections
+  experiment = models.ForeignKey(Experiment, related_name='cell_masks')
+  series = models.ForeignKey(Series, related_name='cell_masks')
+  cell = models.ForeignKey(Region, related_name='masks')
+  cell_instance = models.ForeignKey(RegionInstance, related_name='masks')
+  mask = models.ForeignKey(Mask, related_name='cell_masks')
+  marker = models.OneToOneField(Marker, related_name='cell_mask')
+
+  # properties
+  gray_value_id = models.IntegerField(default=0)
+  area = models.IntegerField(default=0)
+
+  # methods
+  def load(self):
+    return self.mask.load()

@@ -12,6 +12,7 @@ from apps.img import algorithms
 import os
 import re
 from scipy.misc import imread, imsave, toimage
+from skimage import exposure
 import numpy as np
 
 ### Models
@@ -28,6 +29,25 @@ class Composite(models.Model):
   def __str__(self):
     return '{}, {} > {}'.format(self.experiment.name, self.series.name, self.id_token)
 
+class Template(models.Model):
+  # connections
+  composite = models.ForeignKey(Composite, related_name='templates')
+
+  # properties
+  name = models.CharField(max_length=255)
+  rx = models.CharField(max_length=255)
+  rv = models.CharField(max_length=255)
+
+  # methods
+  def __str__(self):
+    return '{}: {}'.format(self.name, self.rx)
+
+  def match(self, string):
+    return re.match(self.rx, string)
+
+  def dict(self, string):
+    return self.match(string).groupdict()
+
 ### GONS
 class Channel(models.Model):
   # connections
@@ -42,18 +62,23 @@ class Channel(models.Model):
   def __str__(self):
     return '{} > {}'.format(self.composite.id_token, self.name)
 
+  def segment(self, marker_channel, pipeline_name):
+    pass
+
+  def segment_regions(self, region_marker_channel, pipeline_name):
+    pass
+
 class Gon(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='gons')
   series = models.ForeignKey(Series, related_name='gons')
   composite = models.ForeignKey(Composite, related_name='gons', null=True)
-  channel = models.ForeignKey('Channel', related_name='gons')
+  template = models.ForeignKey(Template, related_name='gons', null=True)
+  channel = models.ForeignKey(Channel, related_name='gons')
   gon = models.ForeignKey('self', related_name='gons', null=True)
-  template = models.ForeignKey('Template', related_name='gons', null=True)
 
   # properties
   id_token = models.CharField(max_length=8, default='')
-  batch = models.IntegerField(default=0)
 
   # 1. origin
   r = models.IntegerField(default=0)
@@ -190,13 +215,13 @@ class Mask(models.Model):
   experiment = models.ForeignKey(Experiment, related_name='masks')
   series = models.ForeignKey(Series, related_name='masks')
   composite = models.ForeignKey(Composite, related_name='masks', null=True)
-  channel = models.ForeignKey('Channel', related_name='masks')
-  mask = models.ForeignKey('self', related_name='masks', null=True)
-  template = models.ForeignKey('Template', related_name='masks', null=True)
+  channel = models.ForeignKey(MaskChannel, related_name='masks')
+  template = models.ForeignKey(Template, related_name='masks', null=True)
 
   # properties
   id_token = models.CharField(max_length=8, default='')
-  batch = models.IntegerField(default=0)
+  url = models.CharField(max_length=255)
+  file_name = models.CharField(max_length=255)
 
   # 1. origin
   r = models.IntegerField(default=0)
@@ -239,62 +264,16 @@ class Mask(models.Model):
     return str('0'*(len(str(self.series.zs)) - len(str(self.z if z is None else z))) + str(self.z if z is None else z))
 
   def load(self):
-    self.array = []
-    for path in self.paths.order_by('z'):
-      array = imread(path.url)
-      self.array.append(array)
-    self.array = np.dstack(self.array).squeeze() # remove unnecessary dimensions
+    array = imread(self.url)
+    self.array = exposure.rescale_intensity(array * 1.0) * (len(np.unique(array)) - 1).astype(int) # rescale to contain integer grayscale id's.
     return self.array
 
   def save_array(self, root, template):
-    # 1. iterate through planes in bulk
-    # 2. for each plane, save plane based on root, template
-    # 3. create path with url and add to gon
-
     if not os.path.exists(root):
       os.makedirs(root)
 
-    file_name = template.rv.format(self.experiment.name, self.series.name, self.channel.name, self.t, '{}')
-    url = os.path.join(root, file_name)
+    self.file_name = template.rv.format(self.experiment.name, self.series.name, self.channel.name, self.t, '{}')
+    self.url = os.path.join(root, file_name).format(self.z)
 
-    if len(self.array.shape)==2:
-      imsave(url.format(self.z), self.array)
-      self.paths.create(composite=self.composite if self.composite is not None else self.gon.composite, channel=self.channel, template=template, url=url.format(self.z), file_name=file_name.format(self.z), t=self.t, z=self.z)
-
-    else:
-      for z in range(self.array.shape[2]):
-        plane = self.array[:,:,z].copy()
-
-        imsave(url.format(z+self.z), plane) # z level is offset by that of original gon.
-        self.paths.create(composite=self.composite, channel=self.channel, template=template, url=url.format(self.z), file_name=file_name.format(self.z), t=self.t, z=z+self.z)
-
-        # create gons
-        gon = self.gons.create(experiment=self.composite.experiment, series=self.composite.series, channel=self.channel, template=template)
-        gon.set_origin(self.r, self.c, z, self.t)
-        gon.set_extent(self.rs, self.cs, 1)
-
-        gon.array = plane.copy().squeeze()
-
-        gon.save_array(self.experiment.composite_path, template)
-        gon.save()
-
-### MASK STRUCTURE
-class MaskPath(models.Model):
-  # connections
-  composite = models.ForeignKey(Composite, related_name='paths')
-  gon = models.ForeignKey(Gon, related_name='paths')
-  channel = models.ForeignKey(Channel, related_name='paths')
-  template = models.ForeignKey(Template, related_name='paths')
-
-  # properties
-  url = models.CharField(max_length=255)
-  file_name = models.CharField(max_length=255)
-  t = models.IntegerField(default=0)
-  z = models.IntegerField(default=0)
-
-  # methods
-  def __str__(self):
-    return '{}: {}'.format(self.composite.id_token, self.file_name)
-
-  def load(self):
-    return imread(self.url)
+    imsave(self.url, self.array)
+    self.save()
