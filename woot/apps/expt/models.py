@@ -235,9 +235,9 @@ class Series(models.Model):
     else:
       return (self.rs, self.cs, self.zs)
 
-class Channel(models.Model):
+class PathChannel(models.Model):
   # connections
-  experiment = models.ForeignKey(Experiment, related_name='channels')
+  experiment = models.ForeignKey(Experiment, related_name='path_channels')
 
   # properties
   name = models.CharField(max_length=255)
@@ -245,25 +245,6 @@ class Channel(models.Model):
   # methods
   def __str__(self):
     return '{}: {}'.format(self.experiment.name, self.name)
-
-class Template(models.Model):
-  # connections
-  experiment = models.ForeignKey(Experiment, related_name='templates')
-
-  # properties
-  name = models.CharField(max_length=255)
-  rx = models.CharField(max_length=255)
-  rv = models.CharField(max_length=255)
-
-  # methods
-  def __str__(self):
-    return '{}: {}'.format(self.name, self.rx)
-
-  def match(self, string):
-    return re.match(self.rx, string)
-
-  def dict(self, string):
-    return self.match(string).groupdict()
 
 class Path(models.Model):
   # connections
@@ -285,13 +266,21 @@ class Path(models.Model):
   def load(self):
     return imread(self.url)
 
-class Region(models.Model):
+class Template(models.Model):
   # connections
-  experiment = models.ForeignKey(Experiment, related_name='regions')
-  series = models.ForeignKey(Series, related_name='regions')
+  experiment = models.ForeignKey(Experiment, related_name='templates')
 
   # properties
   name = models.CharField(max_length=255)
-  description = models.CharField(max_length=255)
-  index = models.IntegerField(default=0)
-  vertical_sort_index = models.IntegerField(default=0)
+  rx = models.CharField(max_length=255)
+  rv = models.CharField(max_length=255)
+
+  # methods
+  def __str__(self):
+    return '{}: {}'.format(self.name, self.rx)
+
+  def match(self, string):
+    return re.match(self.rx, string)
+
+  def dict(self, string):
+    return self.match(string).groupdict()

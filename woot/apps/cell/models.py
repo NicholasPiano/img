@@ -4,7 +4,7 @@
 from django.db import models
 
 # local
-from apps.expt.models import Experiment, Series, Region
+from apps.expt.models import Experiment, Series
 from apps.img.models import Composite, Channel, Gon
 from apps.img.util import *
 
@@ -20,6 +20,8 @@ class Track(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='tracks')
   series = models.ForeignKey(Series, related_name='tracks')
+  composite = models.ForeignKey(Composite, related_name='tracks')
+  channel = models.ForeignKey(Channel, related_name='tracks')
 
   # properties
   track_id = models.IntegerField(default=0)
@@ -27,20 +29,66 @@ class Track(models.Model):
 
   # methods
 
+class TrackInstance(models.Model):
+  # connections
+  experiment = models.ForeignKey(Experiment, related_name='track_instances')
+  series = models.ForeignKey(Series, related_name='track_instances')
+  composite = models.ForeignKey(Composite, related_name='track_instances')
+  channel = models.ForeignKey(Channel, related_name='track_instances')
+  gon = models.ForeignKey(Gon, related_name='track_instances')
+
+  # properties
+  t = models.IntegerField(default=0)
+
 class Marker(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='markers')
   series = models.ForeignKey(Series, related_name='markers')
+  composite = models.ForeignKey(Composite, related_name='markers')
   channel = models.ForeignKey(Channel, related_name='markers')
+  gon = models.ForeignKey(Gon, related_name='markers')
   track = models.ForeignKey(Track, related_name='markers')
-  region = models.ForeignKey(Region, related_name='markers', null=True)
-  marker = models.ForeignKey('self', related_name='markers', null=True)
+  track_instance = models.ForeignKey(TrackInstance, related_name='markers')
 
   # properties
   r = models.IntegerField(default=0)
   c = models.IntegerField(default=0)
   z = models.IntegerField(default=0)
+
+### REGIONS
+class RegionTrack(models.Model):
+  # connections
+  experiment = models.ForeignKey(Experiment, related_name='region_tracks')
+  series = models.ForeignKey(Series, related_name='region_tracks')
+  composite = models.ForeignKey(Composite, related_name='region_tracks')
+  channel = models.ForeignKey(Channel, related_name='region_tracks')
+
+  # methods
+
+class RegionTrackInstance(models.Model):
+  # connections
+  experiment = models.ForeignKey(Experiment, related_name='region_track_instances')
+  series = models.ForeignKey(Series, related_name='region_track_instances')
+  composite = models.ForeignKey(Composite, related_name='region_track_instances')
+  channel = models.ForeignKey(Channel, related_name='region_track_instances')
+  gon = models.ForeignKey(Gon, related_name='region_track_instances')
+
+  # properties
   t = models.IntegerField(default=0)
+
+class Marker(models.Model):
+  # connections
+  experiment = models.ForeignKey(Experiment, related_name='region_markers')
+  series = models.ForeignKey(Series, related_name='region_markers')
+  composite = models.ForeignKey(Composite, related_name='region_markers')
+  channel = models.ForeignKey(Channel, related_name='region_markers')
+  gon = models.ForeignKey(Gon, related_name='region_markers')
+  track = models.ForeignKey(Track, related_name='region_markers')
+  track_instance = models.ForeignKey(TrackInstance, related_name='region_markers')
+
+  # properties
+  r = models.IntegerField(default=0)
+  c = models.IntegerField(default=0)
 
 ### REALITY
 class Cell(models.Model):

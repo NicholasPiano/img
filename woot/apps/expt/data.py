@@ -150,8 +150,8 @@ templates = {
     'rv':r'{}_s{}_ch-{}_t{}_z{}_cp-{}.tiff',
   },
   'track':{
-    'rx':r'^(?P<experiment>.+)_s(?P<series>.+)_n(?P<index>[0-9]+)\.csv$',
-    'rv':r'{}_s{}_{}.csv',
+    'rx':r'^(?P<experiment>.+)_s(?P<series>.+)_ch-(?P<channel>.+)\.csv$',
+    'rv':r'{}_s{}_ch-{}.csv',
   },
 }
 

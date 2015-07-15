@@ -68,8 +68,11 @@ class Command(BaseCommand):
       template = composite.experiment.templates.get(name='track')
 
       # check series name and load
-      dict = template.dict(file_name)
-      if dict['series']==composite.series.name:
+      template_dict = template.dict(file_name)
+      if template_dict['series']==composite.series.name:
+
+        channel, channel_created = composite.channels.get_or_create(name=template_dict['channel'])
+
         with open(os.path.join(composite.experiment.track_path, file_name), 'r') as track_file:
 
           tracks = {} # stores list of tracks that can then be put into the database

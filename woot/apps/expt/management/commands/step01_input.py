@@ -12,6 +12,8 @@ from apps.expt.data import *
 import os
 from optparse import make_option
 
+spacer = ' ' *  20
+
 ### Command
 class Command(BaseCommand):
   option_list = BaseCommand.option_list + (
@@ -95,7 +97,7 @@ class Command(BaseCommand):
           if num_img_files>0:
             for i, file_name in enumerate(img_files):
               path, path_created, path_message = experiment.get_or_create_path(series, root, file_name)
-              print('step01 | adding image files in {}: ({}/{}) {} ...path {}                    '.format(root, i+1, num_img_files, file_name, path_message), end='\r' if i<num_img_files-1 else '\n')
+              print('step01 | adding image files in {}: ({}/{}) {} ...path {}{}'.format(root, i+1, num_img_files, file_name, path_message, spacer), end='\r' if i<num_img_files-1 else '\n')
 
           else:
             print('step01 | no files found in {}'.format(root))
@@ -118,7 +120,7 @@ class Command(BaseCommand):
         series.compose()
 
         # 6. create regions
-        print('step01 | creating regions for {} series {}...                        '.format(experiment_name, series_name), end='\r')
+        print('step01 | creating regions for {} series {}...{}'.format(experiment_name, series_name, spacer), end='\r')
         for region_prototype in list(filter(lambda rp: rp.experiment==experiment_name and rp.series==series_name, regions)):
           region, region_created = series.regions.get_or_create(experiment=experiment, name=region_prototype.name)
           if region_created:
@@ -127,7 +129,7 @@ class Command(BaseCommand):
             region.vertical_sort_index = region_prototype.vertical_sort_index
             region.save()
 
-        print('step01 | creating regions for {} series {}... done.                    '.format(experiment_name, series_name))
+        print('step01 | creating regions for {} series {}... done.{}'.format(experiment_name, series_name, spacer))
 
       else:
         print('step01 | {}/{} not a valid series.'.format(experiment_name, series_name))
