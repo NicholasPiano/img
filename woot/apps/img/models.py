@@ -277,3 +277,23 @@ class Mask(models.Model):
 
     imsave(self.url, self.array)
     self.save()
+
+### DATA
+class DataFile(models.Model):
+  # connections
+  experiment = models.ForeignKey(Experiment, related_name='data_files')
+  series = models.ForeignKey(Series, related_name='data_files')
+  composite = models.ForeignKey(Composite, related_name='data_files')
+  channel = models.ForeignKey(MaskChannel, related_name='data_files')
+  template = models.ForeignKey(Template, related_name='data_files')
+
+  # properties
+  url = models.CharField(max_length=255)
+  file_name = models.CharField(max_length=255)
+
+  data = []
+
+  # methods
+  def load(self):
+    pass
+    # parse cell profiler results spreadsheet into array that can be used to make cell instances

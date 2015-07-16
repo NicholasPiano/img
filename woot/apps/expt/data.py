@@ -132,7 +132,6 @@ allowed_img_extensions = (
 
 allowed_data_extensions = (
   '.csv',
-  '.xls',
 )
 
 ### image filename templates
@@ -157,8 +156,7 @@ templates = {
 
 ### Default paths
 default_paths = {
-  'img':'img/storage/',
-  'tracking':'img/tracking/',
+  'storage':'img/storage/',
   'composite':'img/composite/',
   'region':'img/region/',
   'cp':'img/cp/',
