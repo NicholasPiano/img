@@ -29,6 +29,10 @@ class Composite(models.Model):
   def __str__(self):
     return '{}, {} > {}'.format(self.experiment.name, self.series.name, self.id_token)
 
+  def save_data_file(self):
+    # save data on all cell instances
+    pass
+
 class Template(models.Model):
   # connections
   composite = models.ForeignKey(Composite, related_name='templates')
@@ -284,7 +288,6 @@ class DataFile(models.Model):
   experiment = models.ForeignKey(Experiment, related_name='data_files')
   series = models.ForeignKey(Series, related_name='data_files')
   composite = models.ForeignKey(Composite, related_name='data_files')
-  channel = models.ForeignKey(MaskChannel, related_name='data_files')
   template = models.ForeignKey(Template, related_name='data_files')
 
   # properties
@@ -297,3 +300,5 @@ class DataFile(models.Model):
   def load(self):
     pass
     # parse cell profiler results spreadsheet into array that can be used to make cell instances
+    # 1. generate dictionary keys from title line
+    # 2. return array of dictionaries
