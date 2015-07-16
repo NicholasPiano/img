@@ -235,7 +235,7 @@ class Series(models.Model):
 
 class PathChannel(models.Model):
   # connections
-  experiment = models.ForeignKey(Experiment, related_name='path_channels')
+  experiment = models.ForeignKey(Experiment, related_name='channels')
 
   # properties
   name = models.CharField(max_length=255)

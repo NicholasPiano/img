@@ -119,16 +119,6 @@ class Command(BaseCommand):
         # 5. create composite
         series.compose()
 
-        # 6. create regions
-        print('step01 | creating regions for {} series {}...{}'.format(experiment_name, series_name, spacer), end='\r')
-        for region_prototype in list(filter(lambda rp: rp.experiment==experiment_name and rp.series==series_name, regions)):
-          region, region_created = series.regions.get_or_create(experiment=experiment, name=region_prototype.name)
-          if region_created:
-            region.description = region_prototype.description
-            region.index = region_prototype.index
-            region.vertical_sort_index = region_prototype.vertical_sort_index
-            region.save()
-
         print('step01 | creating regions for {} series {}... done.{}'.format(experiment_name, series_name, spacer))
 
       else:

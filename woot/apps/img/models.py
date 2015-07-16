@@ -55,8 +55,6 @@ class Template(models.Model):
 ### GONS
 class Channel(models.Model):
   # connections
-  experiment = models.ForeignKey(Experiment, related_name='channels')
-  series = models.ForeignKey(Series, related_name='channels')
   composite = models.ForeignKey(Composite, related_name='channels')
 
   # properties
