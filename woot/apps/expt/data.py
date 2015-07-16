@@ -1,4 +1,4 @@
-# apps.img.data
+# apps.expt.data
 
 '''
 Specific experiment and series information in the form of lists of prototype objects
@@ -140,7 +140,7 @@ templates = {
     'rx':r'^(?P<experiment>.+)_s(?P<series>.+)_ch(?P<channel>.+)_t(?P<t>[0-9]+)_z(?P<z>[0-9]+)\.(?P<extension>.+)$',
     'rv':r'{}_s{}_ch{}_t{}_z{}.tiff',
   },
-  'region':{
+  'mask':{
     'rx':r'^(?P<experiment>.+)_s(?P<series>.+)_ch(?P<channel>.+)_t(?P<t>[0-9]+)\.(?P<extension>.+)$',
     'rv':r'{}_s{}_ch{}_t{}.tiff',
   },
@@ -148,17 +148,10 @@ templates = {
     'rx':r'^(?P<experiment>.+)_s(?P<series>.+)_ch-(?P<channel>.+)_t(?P<t>[0-9]+)_z(?P<z>[0-9]+)_cp-(?P<secondary_channel>.+)\.(?P<extension>.+)$',
     'rv':r'{}_s{}_ch-{}_t{}_z{}_cp-{}.tiff',
   },
-  'track':{
-    'rx':r'^(?P<experiment>.+)_s(?P<series>.+)_ch-(?P<channel>.+)\.csv$',
-    'rv':r'{}_s{}_ch-{}.csv',
+  'data':{
+    'rx':r'^(?P<experiment>.+)_s(?P<series>.+)_type-(?P<type>.+)_(?P<id>[A-Z0-9]{8})\.csv$',
+    'rv':r'{}_s{}_type-{}_{}.csv',
   },
-
-  # storage image
-  # cell profiler results image
-  # data file
-  # track storage file
-  # region track storage file
-
 }
 
 ### Default paths

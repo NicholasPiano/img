@@ -6,12 +6,15 @@ from django.db import models
 # local
 from apps.expt.data import *
 from apps.expt.util import generate_id_token
+from apps.expt.pipeline import pipeline_base
 
 # util
 import os
 import re
 from scipy.misc import imread, imsave
 import numpy as np
+
+spacer = ' ' *  20
 
 ### Models
 class Experiment(models.Model):
@@ -45,7 +48,6 @@ class Experiment(models.Model):
     self.base_path = base_path
     self.storage_path = os.path.join(self.base_path, default_paths['storage'])
     self.composite_path = os.path.join(self.base_path, default_paths['composite'])
-    self.region_path = os.path.join(self.base_path, default_paths['region'])
     self.cp_path = os.path.join(self.base_path, default_paths['cp'])
 
     self.output_path = os.path.join(self.base_path, default_paths['output'])
@@ -56,7 +58,7 @@ class Experiment(models.Model):
 
     self.save()
 
-    for path in [self.composite_path, self.region_path, self.cp_path, self.output_path, self.plot_path, self.track_path, self.data_path, self.pipeline_path]:
+    for path in [self.composite_path, self.cp_path, self.output_path, self.plot_path, self.track_path, self.data_path, self.pipeline_path]:
       if not os.path.exists(path):
         os.makedirs(path)
 
@@ -81,7 +83,7 @@ class Experiment(models.Model):
     return (series_name in [s.name for s in filter(lambda x: x.experiment==self.name, series)])
 
   def img_roots(self):
-    return [self.storage_path, self.tracking_path, self.composite_path, self.region_path]
+    return [self.storage_path, self.composite_path]
 
   def path_matches_series(self, path, series_name):
 
@@ -132,6 +134,12 @@ class Experiment(models.Model):
 
     else:
       return None, False, 'does not match template.'
+
+  def create_pipeline(self, name, **kwargs):
+    url = os.path.join(self.pipeline_path, name)
+    pipeline = self.pipelines.create(name=name, url=url)
+    pipeline.save_file(**kwargs)
+    pipeline.save()
 
 class Series(models.Model):
   # connections
@@ -194,22 +202,26 @@ class Series(models.Model):
 
             # sub gon
             sub_gon, sub_gon_created = self.gons.get_or_create(experiment=self.experiment, gon=gon, channel=composite_channel, template=template, t=t, z=z)
+            E = z==self.zs-1 and t==self.ts-1
             if sub_gon_created:
-              print('step01 | composing {} series {}... channel {} t{} z{}... created.           '.format(self.experiment.name, self.name, channel.name, t, z), end='\r')
+              print('step01 | composing {} series {}... channel {} t{} z{}... created.{}'.format(self.experiment.name, self.name, channel.name, t, z, spacer), end='\n' if E else '\r')
               sub_gon.set_origin(0,0,z,t)
               sub_gon.set_extent(self.rs, self.cs, 1)
               sub_gon.paths.create(composite=composite, channel=composite_channel, template=template, url=path.url, file_name=path.file_name, t=t, z=z)
 
             else:
-              print('step01 | composing {} series {}... channel {} t{} z{}... already exists.              '.format(self.experiment.name, self.name, channel.name, t, z), end='\r')
+              print('step01 | composing {} series {}... channel {} t{} z{}... already exists.{}'.format(self.experiment.name, self.name, channel.name, t, z, spacer), end='\n' if E else '\r')
 
             sub_gon.save()
 
           gon.save()
 
+
         else: # disfuse gon structure (reduced, regions)
-          for path in path_set:
-            print('step01 | composing {} series {}... channel {} t{} z{}... created diffuse.           '.format(self.experiment.name, self.name, channel.name, t, path.z), end='\r')
+          L = len(path_set) - 1
+          for i, path in enumerate(path_set):
+            E = i==L and t==self.ts-1
+            print('step01 | composing {} series {}... channel {} t{} z{}... created diffuse.{}'.format(self.experiment.name, self.name, channel.name, t, path.z, spacer), end='\n' if E else '\r')
 
             template = composite.templates.get(name=path.template.name)
             gon, gon_created = self.gons.get_or_create(experiment=self.experiment, composite=composite, channel=composite_channel, template=template, t=t, z=path.z)
@@ -292,6 +304,12 @@ class Pipeline(models.Model):
   url = models.CharField(max_length=255)
 
   # methods
+  def save_file(self, **kwargs):
+    text = pipeline_base.format(kwargs)
+
+    with open(url, 'w+') as pipeline_file:
+      pipeline_file.write(text)
+
   def run(self):
     pass
     # run cell profiler pipeline with some options
