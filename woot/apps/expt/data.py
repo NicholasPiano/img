@@ -152,6 +152,13 @@ templates = {
     'rx':r'^(?P<experiment>.+)_s(?P<series>.+)_ch-(?P<channel>.+)\.csv$',
     'rv':r'{}_s{}_ch-{}.csv',
   },
+
+  # storage image
+  # cell profiler results image
+  # data file
+  # track storage file
+  # region track storage file
+
 }
 
 ### Default paths
