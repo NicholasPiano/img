@@ -269,8 +269,8 @@ class CellMask(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='cell_masks')
   series = models.ForeignKey(Series, related_name='cell_masks')
-  cell = models.ForeignKey(Region, related_name='masks')
-  cell_instance = models.ForeignKey(RegionInstance, related_name='masks')
+  cell = models.ForeignKey(Cell, related_name='masks')
+  cell_instance = models.ForeignKey(CellInstance, related_name='masks')
   mask = models.ForeignKey(Mask, related_name='cell_masks')
   marker = models.OneToOneField(Marker, related_name='cell_mask')
 

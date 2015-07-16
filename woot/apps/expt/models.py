@@ -246,26 +246,6 @@ class PathChannel(models.Model):
   def __str__(self):
     return '{}: {}'.format(self.experiment.name, self.name)
 
-class Path(models.Model):
-  # connections
-  experiment = models.ForeignKey(Experiment, related_name='paths')
-  series = models.ForeignKey(Series, related_name='paths')
-  channel = models.ForeignKey(Channel, related_name='paths')
-  template = models.ForeignKey(Template, related_name='paths')
-
-  # properties
-  url = models.CharField(max_length=255)
-  file_name = models.CharField(max_length=255)
-  t = models.IntegerField(default=0)
-  z = models.IntegerField(default=0)
-
-  # methods
-  def __str__(self):
-    return '{}: {}'.format(self.experiment.name, self.url)
-
-  def load(self):
-    return imread(self.url)
-
 class Template(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='templates')
@@ -284,6 +264,26 @@ class Template(models.Model):
 
   def dict(self, string):
     return self.match(string).groupdict()
+
+class Path(models.Model):
+  # connections
+  experiment = models.ForeignKey(Experiment, related_name='paths')
+  series = models.ForeignKey(Series, related_name='paths')
+  channel = models.ForeignKey(PathChannel, related_name='paths')
+  template = models.ForeignKey(Template, related_name='paths')
+
+  # properties
+  url = models.CharField(max_length=255)
+  file_name = models.CharField(max_length=255)
+  t = models.IntegerField(default=0)
+  z = models.IntegerField(default=0)
+
+  # methods
+  def __str__(self):
+    return '{}: {}'.format(self.experiment.name, self.url)
+
+  def load(self):
+    return imread(self.url)
 
 class Pipeline(models.Model):
   # connections
