@@ -23,7 +23,6 @@ class Experiment(models.Model):
   img_path = models.CharField(max_length=255)
   tracking_path = models.CharField(max_length=255)
   composite_path = models.CharField(max_length=255)
-  region_img_path = models.CharField(max_length=255)
   region_path = models.CharField(max_length=255)
   cp_path = models.CharField(max_length=255)
 
@@ -48,7 +47,6 @@ class Experiment(models.Model):
     self.img_path = os.path.join(self.base_path, default_paths['img'])
     self.tracking_path = os.path.join(self.base_path, default_paths['tracking'])
     self.composite_path = os.path.join(self.base_path, default_paths['composite'])
-    self.region_img_path = os.path.join(self.base_path, default_paths['region_img'])
     self.region_path = os.path.join(self.base_path, default_paths['region'])
     self.cp_path = os.path.join(self.base_path, default_paths['cp'])
 
@@ -60,7 +58,7 @@ class Experiment(models.Model):
 
     self.save()
 
-    for path in [self.tracking_path, self.composite_path, self.region_img_path, self.region_path, self.cp_path, self.output_path, self.plot_path, self.track_path, self.data_path, self.pipeline_path]:
+    for path in [self.tracking_path, self.composite_path, self.region_path, self.cp_path, self.output_path, self.plot_path, self.track_path, self.data_path, self.pipeline_path]:
       if not os.path.exists(path):
         os.makedirs(path)
 
@@ -85,7 +83,7 @@ class Experiment(models.Model):
     return (series_name in [s.name for s in filter(lambda x: x.experiment==self.name, series)])
 
   def img_roots(self):
-    return [self.img_path, self.tracking_path, self.composite_path, self.region_img_path, self.region_path]
+    return [self.img_path, self.tracking_path, self.composite_path, self.region_path]
 
   def path_matches_series(self, path, series_name):
 
@@ -199,13 +197,13 @@ class Series(models.Model):
             # sub gon
             sub_gon, sub_gon_created = self.gons.get_or_create(experiment=self.experiment, gon=gon, channel=composite_channel, template=template, t=t, z=z)
             if sub_gon_created:
-              print('step01 | composing {} series {}... channel {} t{} z{}... created.           '.format(self.experiment.name, self.name, channel.name, t, z))
+              print('step01 | composing {} series {}... channel {} t{} z{}... created.           '.format(self.experiment.name, self.name, channel.name, t, z), end='\r')
               sub_gon.set_origin(0,0,z,t)
               sub_gon.set_extent(self.rs, self.cs, 1)
               sub_gon.paths.create(composite=composite, channel=composite_channel, template=template, url=path.url, file_name=path.file_name, t=t, z=z)
 
             else:
-              print('step01 | composing {} series {}... channel {} t{} z{}... already exists.'.format(self.experiment.name, self.name, channel.name, t, z))
+              print('step01 | composing {} series {}... channel {} t{} z{}... already exists.              '.format(self.experiment.name, self.name, channel.name, t, z), end='\r')
 
             sub_gon.save()
 
@@ -213,7 +211,7 @@ class Series(models.Model):
 
         else: # disfuse gon structure (reduced, regions)
           for path in path_set:
-            print('step01 | composing diffuse {} series {}... channel {} t{} z{}'.format(self.experiment.name, self.name, channel.name, t, path.z))
+            print('step01 | composing {} series {}... channel {} t{} z{}... created diffuse.           '.format(self.experiment.name, self.name, channel.name, t, path.z), end='\r')
 
             template = composite.templates.get(name=path.template.name)
             gon, gon_created = self.gons.get_or_create(experiment=self.experiment, composite=composite, channel=composite_channel, template=template, t=t, z=path.z)
@@ -237,9 +235,9 @@ class Series(models.Model):
     else:
       return (self.rs, self.cs, self.zs)
 
-class Channel(models.Model):
+class PathChannel(models.Model):
   # connections
-  experiment = models.ForeignKey(Experiment, related_name='channels')
+  experiment = models.ForeignKey(Experiment, related_name='path_channels')
 
   # properties
   name = models.CharField(max_length=255)
@@ -271,7 +269,7 @@ class Path(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='paths')
   series = models.ForeignKey(Series, related_name='paths')
-  channel = models.ForeignKey(Channel, related_name='paths')
+  channel = models.ForeignKey(PathChannel, related_name='paths')
   template = models.ForeignKey(Template, related_name='paths')
 
   # properties
@@ -287,13 +285,15 @@ class Path(models.Model):
   def load(self):
     return imread(self.url)
 
-class Region(models.Model):
+class Pipeline(models.Model):
   # connections
-  experiment = models.ForeignKey(Experiment, related_name='regions')
-  series = models.ForeignKey(Series, related_name='regions')
+  experiment = models.ForeignKey(Experiment, related_name='pipelines')
 
   # properties
   name = models.CharField(max_length=255)
-  description = models.CharField(max_length=255)
-  index = models.IntegerField(default=0)
-  vertical_sort_index = models.IntegerField(default=0)
+  url = models.CharField(max_length=255)
+
+  # methods
+  def run(self):
+    pass
+    # run cell profiler pipeline with some options

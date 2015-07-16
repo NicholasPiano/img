@@ -10,6 +10,8 @@ from apps.expt.util import *
 # util
 from optparse import make_option
 
+spacer = ' ' *  20
+
 ### Command
 class Command(BaseCommand):
   option_list = BaseCommand.option_list + (
@@ -62,6 +64,6 @@ class Command(BaseCommand):
     mod = composite.mods.create(id_token=generate_id_token('img', 'Mod'), algorithm='mod_zmod')
 
     # 3. Run mod
-    print('step02 | processing mod_zmod...')
+    print('step02 | processing mod_zmod...', end='\r')
     mod.run()
-    print('step02 | processing mod_zmod... done.')
+    print('step02 | processing mod_zmod... done.{}'.format(spacer))
