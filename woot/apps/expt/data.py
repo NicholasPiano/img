@@ -152,6 +152,10 @@ templates = {
     'rx':r'^(?P<experiment>.+)_s(?P<series>.+)_type-(?P<type>.+)_(?P<id>[A-Z0-9]{8})\.csv$',
     'rv':r'{}_s{}_type-{}_{}.csv',
   },
+  'pipeline':{
+    'rx':r'^(?P<name>.+)_(?P<id>[A-Z0-9]{8})\.cppipe$'
+    'rv':r'{}_{}.cppipe',
+  }
 }
 
 ### Default paths

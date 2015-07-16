@@ -36,11 +36,6 @@ class TrackInstance(models.Model):
   # properties
   t = models.IntegerField(default=0)
 
-  # methods
-  def primary(self, marker_channel=None): # produce primary image of particular channel
-    pass
-    # 1. draw white square on black background
-
 class Marker(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='markers')

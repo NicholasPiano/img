@@ -66,9 +66,21 @@ class Channel(models.Model):
 
   def segment(self, marker_channel, pipeline_name):
     pass
+    # 1. create primary from markers with marker_channel
+    # 2. create pipeline and run
+    # 3. import masks and create new mask channel
+    # 4. import datafiles and access data
+    # 5. create cells and cell instances from tracks
 
   def segment_regions(self, region_marker_channel, pipeline_name):
     pass
+
+  # methods
+  def primary(self):
+    # 1. loop through time series
+    for t in range(self.series.ts):
+      
+
 
 class Gon(models.Model):
   # connections

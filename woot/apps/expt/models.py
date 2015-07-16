@@ -136,10 +136,13 @@ class Experiment(models.Model):
       return None, False, 'does not match template.'
 
   def create_pipeline(self, name, **kwargs):
+    template = self.templates.get(name='pipeline')
+    name = template.rv.format(name, generate_id_token('expt','Pipeline'))
     url = os.path.join(self.pipeline_path, name)
-    pipeline = self.pipelines.create(name=name, url=url)
+    pipeline = self.pipelines.create(template=template, name=name, url=url)
     pipeline.save_file(**kwargs)
     pipeline.save()
+    return pipeline
 
 class Series(models.Model):
   # connections
@@ -298,6 +301,7 @@ class Path(models.Model):
 class Pipeline(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='pipelines')
+  template = models.ForeignKey(Template, related_name='pipelines')
 
   # properties
   name = models.CharField(max_length=255)
