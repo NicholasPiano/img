@@ -77,10 +77,13 @@ class Channel(models.Model):
 
   # methods
   def primary(self):
-    # 1. loop through time series
-    for t in range(self.series.ts):
-      print(t)
+    if self.tracks.count()!=0:
+      # 1. loop through time series
+      for t in range(self.series.ts):
+        print(t)
 
+    else:
+      print('primary for composite {} {} {} channel {} | no tracks have been defined.'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name))
 
 class Gon(models.Model):
   # connections

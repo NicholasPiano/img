@@ -81,44 +81,38 @@ def mod_zmod(composite, mod_id, algorithm):
         Zbf[r,c] = bfz
         Zcomp[r,c] = bfz * mean
 
-      print(t,r)
-
     # images to channel gons
     zmod_gon, zmod_gon_created = composite.gons.get_or_create(experiment=composite.experiment, series=composite.series, channel=zmod_channel, t=t)
-    if True:
-      zmod_gon.set_origin(0,0,0,t)
-      zmod_gon.set_extent(composite.series.rs, composite.series.cs, 1)
+    zmod_gon.set_origin(0,0,0,t)
+    zmod_gon.set_extent(composite.series.rs, composite.series.cs, 1)
 
-      zmod_gon.array = Z
-      zmod_gon.save_array(composite.series.experiment.composite_path, template)
-      zmod_gon.save()
+    zmod_gon.array = Z
+    zmod_gon.save_array(composite.series.experiment.composite_path, template)
+    zmod_gon.save()
 
     zmean_gon, zmean_gon_created = composite.gons.get_or_create(experiment=composite.experiment, series=composite.series, channel=zmean_channel, t=t)
-    if True:
-      zmean_gon.set_origin(0,0,0,t)
-      zmean_gon.set_extent(composite.series.rs, composite.series.cs, 1)
+    zmean_gon.set_origin(0,0,0,t)
+    zmean_gon.set_extent(composite.series.rs, composite.series.cs, 1)
 
-      zmean_gon.array = exposure.rescale_intensity(Zmean * 1.0)
-      zmean_gon.save_array(composite.series.experiment.composite_path, template)
-      zmean_gon.save()
+    zmean_gon.array = exposure.rescale_intensity(Zmean * 1.0)
+    zmean_gon.save_array(composite.series.experiment.composite_path, template)
+    zmean_gon.save()
 
     zbf_gon, zbf_gon_created = composite.gons.get_or_create(experiment=composite.experiment, series=composite.series, channel=zbf_channel, t=t)
-    if True:
-      zbf_gon.set_origin(0,0,0,t)
-      zbf_gon.set_extent(composite.series.rs, composite.series.cs, 1)
+    zbf_gon.set_origin(0,0,0,t)
+    zbf_gon.set_extent(composite.series.rs, composite.series.cs, 1)
 
-      zbf_gon.array = Zbf
-      zbf_gon.save_array(composite.series.experiment.composite_path, template)
-      zbf_gon.save()
+    zbf_gon.array = Zbf
+    zbf_gon.save_array(composite.series.experiment.composite_path, template)
+    zbf_gon.save()
 
     zcomp_gon, zcomp_gon_created = composite.gons.get_or_create(experiment=composite.experiment, series=composite.series, channel=zcomp_channel, t=t)
-    if True:
-      zcomp_gon.set_origin(0,0,0,t)
-      zcomp_gon.set_extent(composite.series.rs, composite.series.cs, 1)
+    zcomp_gon.set_origin(0,0,0,t)
+    zcomp_gon.set_extent(composite.series.rs, composite.series.cs, 1)
 
-      zcomp_gon.array = Zcomp
-      zcomp_gon.save_array(composite.series.experiment.tracking_path, template) # TRACKING PATH
-      zcomp_gon.save()
+    zcomp_gon.array = Zcomp
+    zcomp_gon.save_array(composite.series.experiment.composite_path, template)
+    zcomp_gon.save()
 
 def mod_regions(composite, mod_id, algorithm):
   # paths
