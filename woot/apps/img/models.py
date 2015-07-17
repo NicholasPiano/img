@@ -301,6 +301,7 @@ class DataFile(models.Model):
   template = models.ForeignKey(Template, related_name='data_files')
 
   # properties
+  data_type = models.CharField(max_length=255)
   url = models.CharField(max_length=255)
   file_name = models.CharField(max_length=255)
 

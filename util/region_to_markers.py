@@ -22,47 +22,48 @@ with open(track_file, 'w+') as track:
     m = re.match(temp, image_file_name)
     t = int(m.group('t'))
     print(t)
-    img = imread(os.path.join(input_dir, image_file_name))
+    if True:
+      img = imread(os.path.join(input_dir, image_file_name))
 
-    img = img[:,:,0]
-    img[img<img.max()] = 0
-    img[img>0] = 1
-    img, n = label(img)
+      img = img[:,:,0]
+      img[img<img.max()] = 0
+      img[img>0] = 1
+      img, n = label(img)
 
-    if len(np.unique(img))>5:
-      img[img==3] = 0
-      img[img==4] = 0
-      img[img==5] = 3
-      img[img==6] = 4
+      if len(np.unique(img))>5:
+        img[img==3] = 0
+        img[img==4] = 0
+        img[img==5] = 3
+        img[img==6] = 4
 
-    # get perimeter
-    for u in np.unique(img):
-      if u>0:
-        mask = np.zeros(img.shape)
-        mask[img!=u] = 0
-        mask[img==u] = 1
-        edge = mask - erode(mask)
+      # get perimeter
+      for u in np.unique(img):
+        if u>0:
+          mask = np.zeros(img.shape)
+          mask[img!=u] = 0
+          mask[img==u] = 1
+          edge = mask - erode(mask)
 
-        # recompose into single blob
-        # blank = np.zeros(edge.shape)
-        #
-        # for r in range(edge.shape[0]):
-        #   for c in range(edge.shape[1]):
-        #     up = edge[:r,c]
-        #     down = edge[r:,c]
-        #     left = edge[r,:c]
-        #     right = edge[r,c:]
-        #     print(r, c, edge[r,c]==1, np.sum(up==1), np.sum(down==1), np.sum(left==1), np.sum(right==1))
-        #     # print(up.shape, down.shape, left.shape, right.shape)
-        #     if up.sum()>0 and down.sum()>0 and left.sum()>0 and right.sum()>0:
-        #       blank[r,c] = 255
-        #
-        # plt.imshow(blank, cmap='Greys_r')
-        # plt.show()
+          # recompose into single blob
+          # blank = np.zeros(edge.shape)
+          #
+          # for r in range(edge.shape[0]):
+          #   for c in range(edge.shape[1]):
+          #     up = edge[:r,c]
+          #     down = edge[r:,c]
+          #     left = edge[r,:c]
+          #     right = edge[r,c:]
+          #     print(r, c, edge[r,c]==1, np.sum(up==1), np.sum(down==1), np.sum(left==1), np.sum(right==1))
+          #     # print(up.shape, down.shape, left.shape, right.shape)
+          #     if up.sum()>0 and down.sum()>0 and left.sum()>0 and right.sum()>0:
+          #       blank[r,c] = 255
+          #
+          # plt.imshow(blank, cmap='Greys_r')
+          # plt.show()
 
-        # after that is shown, print out points to a file
+          # after that is shown, print out points to a file
 
-        w = np.where(edge==1)
-        points = [(r,c) for r,c in zip(w[0], w[1])]
-        for point in points:
-          track.write('{},{},{},{},{},{},{}\n'.format('050714','13','-zbf',t,5-u,point[0],point[1]))
+          w = np.where(edge==1)
+          points = [(r,c) for r,c in zip(w[0], w[1])]
+          for point in points:
+            track.write('{},{},{},{},{},{},{}\n'.format('050714','13','-zbf',5-u,t,point[0],point[1]))
