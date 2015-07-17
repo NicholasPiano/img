@@ -79,7 +79,7 @@ class Channel(models.Model):
   def primary(self):
     # 1. loop through time series
     for t in range(self.series.ts):
-      
+      print(t)
 
 
 class Gon(models.Model):

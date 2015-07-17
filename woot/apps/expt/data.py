@@ -153,7 +153,7 @@ templates = {
     'rv':r'{}_s{}_type-{}_{}.csv',
   },
   'pipeline':{
-    'rx':r'^(?P<name>.+)_(?P<id>[A-Z0-9]{8})\.cppipe$'
+    'rx':r'^(?P<name>.+)_(?P<id>[A-Z0-9]{8})\.cppipe$',
     'rv':r'{}_{}.cppipe',
   }
 }

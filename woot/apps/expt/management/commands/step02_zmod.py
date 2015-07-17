@@ -60,10 +60,14 @@ class Command(BaseCommand):
     # 1. select composite
     composite = Composite.objects.get(experiment__name=options['expt'], series__name=options['series'])
 
-    # 2. Call pmod mod
-    mod = composite.mods.create(id_token=generate_id_token('img', 'Mod'), algorithm='mod_zmod')
+    # 2. Call zmod mod
+    if composite.channels.filter(name='-zmod').count()==0:
+      mod = composite.mods.create(id_token=generate_id_token('img', 'Mod'), algorithm='mod_zmod')
 
-    # 3. Run mod
-    print('step02 | processing mod_zmod...', end='\r')
-    mod.run()
-    print('step02 | processing mod_zmod... done.{}'.format(spacer))
+      # 3. Run mod
+      print('step02 | processing mod_zmod...', end='\r')
+      mod.run()
+      print('step02 | processing mod_zmod... done.{}'.format(spacer))
+
+    else:
+      print('step02 | zmod already exists...')

@@ -119,10 +119,6 @@ class Command(BaseCommand):
         # 5. create composite
         series.compose()
 
-        # 6. add data files
-        data_files = [f for f in os.listdir(experiment.track_path) if (os.path.splitext(f)[1] in allowed_data_extensions and experiment.path_matches_series(f, series_name))]
-        for data_file in data_files:
-
       else:
         print('step01 | {}/{} not a valid series.'.format(experiment_name, series_name))
 
