@@ -33,6 +33,19 @@ class Composite(models.Model):
     # save data on all cell instances
     pass
 
+  def get_or_create_data_file(self, file_name):
+
+    # metadata
+    root = self.experiment.track_path
+    template = self.templates.get(name='data')
+    metadata = template.dict(file_name)
+
+    if series.name == metadata['series']:
+      data_file, data_file_created = self.data_files.get_or_create(experiment=self.experiment, series=self.series, template=template, data_type=metadata['type'], url=os.path.join(root, file_name), file_name=file_name)
+
+    else:
+      return None, False, 'does not match series.'
+
 class Template(models.Model):
   # connections
   composite = models.ForeignKey(Composite, related_name='templates')
