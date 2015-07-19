@@ -40,9 +40,9 @@ class Composite(models.Model):
     template = self.templates.get(name='data')
     metadata = template.dict(file_name)
 
-    if series.name == metadata['series']:
-      data_file, data_file_created = self.data_files.get_or_create(experiment=self.experiment, series=self.series, template=template, data_type=metadata['type'], url=os.path.join(root, file_name), file_name=file_name)
-
+    if self.series.name == metadata['series']:
+      data_file, data_file_created = self.data_files.get_or_create(experiment=self.experiment, series=self.series, template=template, id_token=metadata['id'], data_type=metadata['type'], url=os.path.join(root, file_name), file_name=file_name)
+      return data_file, data_file_created, 'created.' if data_file_created else 'already exists.'
     else:
       return None, False, 'does not match series.'
 
@@ -317,6 +317,7 @@ class DataFile(models.Model):
   template = models.ForeignKey(Template, related_name='data_files')
 
   # properties
+  id_token = models.CharField(max_length=8)
   data_type = models.CharField(max_length=255)
   url = models.CharField(max_length=255)
   file_name = models.CharField(max_length=255)
@@ -325,7 +326,19 @@ class DataFile(models.Model):
 
   # methods
   def load(self):
-    pass
+    self.data = []
+    with open(self.url) as df:
+      headers = []
+      for line in df.readlines():
+        if 'expt' in line: # title
+          headers = line.rstrip().split(',')
+        else:
+          line_dict = {}
+          for i, token in enumerate(line.rstrip().split(',')):
+            line_dict[headers[i]] = token
+          self.data.append(line_dict)
+    return self.data
+
     # parse cell profiler results spreadsheet into array that can be used to make cell instances
     # 1. generate dictionary keys from title line
     # 2. return array of dictionaries

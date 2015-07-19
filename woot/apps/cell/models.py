@@ -21,7 +21,7 @@ class Track(models.Model):
   experiment = models.ForeignKey(Experiment, related_name='tracks')
   series = models.ForeignKey(Series, related_name='tracks')
   composite = models.ForeignKey(Composite, related_name='tracks')
-  channel = models.ForeignKey(Channel, related_name='tracks')
+  channel = models.ForeignKey(Channel, related_name='tracks', null=True)
 
   # properties
   track_id = models.IntegerField(default=0)
@@ -31,7 +31,7 @@ class TrackInstance(models.Model):
   experiment = models.ForeignKey(Experiment, related_name='track_instances')
   series = models.ForeignKey(Series, related_name='track_instances')
   composite = models.ForeignKey(Composite, related_name='track_instances')
-  track = models.ForeignKey(Track, related_name='track_instances')
+  track = models.ForeignKey(Track, related_name='instances')
 
   # properties
   t = models.IntegerField(default=0)
@@ -57,13 +57,16 @@ class RegionTrack(models.Model):
   experiment = models.ForeignKey(Experiment, related_name='region_tracks')
   series = models.ForeignKey(Series, related_name='region_tracks')
   composite = models.ForeignKey(Composite, related_name='region_tracks')
-  channel = models.ForeignKey(Channel, related_name='region_tracks')
+
+  # properties
+  name = models.CharField(max_length=255)
 
 class RegionTrackInstance(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='region_track_instances')
   series = models.ForeignKey(Series, related_name='region_track_instances')
   composite = models.ForeignKey(Composite, related_name='region_track_instances')
+  region_track = models.ForeignKey(RegionTrack, related_name='instances')
 
   # properties
   t = models.IntegerField(default=0)
@@ -79,10 +82,10 @@ class RegionMarker(models.Model):
   experiment = models.ForeignKey(Experiment, related_name='region_markers')
   series = models.ForeignKey(Series, related_name='region_markers')
   composite = models.ForeignKey(Composite, related_name='region_markers')
-  channel = models.ForeignKey(Channel, related_name='region_markers')
-  gon = models.ForeignKey(Gon, related_name='region_markers')
-  region_track = models.ForeignKey(Track, related_name='region_markers')
-  region_track_instance = models.ForeignKey(TrackInstance, related_name='region_markers')
+  channel = models.ForeignKey(Channel, related_name='region_markers', null=True)
+  gon = models.ForeignKey(Gon, related_name='region_markers', null=True)
+  region_track = models.ForeignKey(RegionTrack, related_name='markers')
+  region_track_instance = models.ForeignKey(RegionTrackInstance, related_name='markers')
 
   # properties
   r = models.IntegerField(default=0)
@@ -95,6 +98,9 @@ class Region(models.Model):
   experiment = models.ForeignKey(Experiment, related_name='regions')
   series = models.ForeignKey(Series, related_name='regions')
   region_track = models.OneToOneField(RegionTrack, related_name='regions')
+
+  # properties
+  name = models.CharField(max_length=255)
 
 class RegionInstance(models.Model):
   # connections

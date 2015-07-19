@@ -16,7 +16,7 @@ track_file = '/Volumes/transport/data/puzzle/050714/track/050714_s13_type-region
 temp = r'050714_s13_ch-regionimg_t(?P<t>[0-9]+)\.tiff'
 
 with open(track_file, 'w+') as track:
-  track.write('expt,series,channel,t,region,r,c\n')
+  track.write('expt,series,channel,region,t,r,c\n')
   # for each image in the input, segment into regions and translate into marker points on the perimeter
   for image_file_name in [f for f in os.listdir(input_dir) if '.DS' not in f]:
     m = re.match(temp, image_file_name)
