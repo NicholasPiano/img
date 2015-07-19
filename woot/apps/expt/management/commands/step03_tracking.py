@@ -94,6 +94,7 @@ class Command(BaseCommand):
         region_track_marker, region_track_marker_created = region_track_instance.markers.get_or_create(experiment=composite.experiment,
                                                                                                        series=composite.series,
                                                                                                        composite=composite,
+                                                                                                       channel=composite.channels.get(name=region_prototype['channel']),
                                                                                                        region_track=region_track,
                                                                                                        r=int(region_prototype['r']),
                                                                                                        c=int(region_prototype['c']))
@@ -117,8 +118,9 @@ class Command(BaseCommand):
         marker, marker_created = track_instance.markers.get_or_create(experiment=composite.experiment,
                                                                       series=composite.series,
                                                                       composite=composite,
+                                                                      channel=composite.channels.get(name=marker_prototype['channel']),
                                                                       track=track,
-                                                                      r=int(marker_prototype['R']),
-                                                                      c=int(marker_prototype['C']))
+                                                                      r=int(marker_prototype['r']),
+                                                                      c=int(marker_prototype['c']))
 
         print('step03 | processing marker ({}/{})... {} tracks, {} instances, {} markers'.format(i+1,len(data),composite.tracks.count(), composite.track_instances.count(), composite.markers.count()), end='\n' if i==len(data)-1 else '\r')
