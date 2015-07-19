@@ -113,7 +113,7 @@ class Channel(models.Model):
     return gon, gon_created
 
   def primary(self):
-    if self.composite.channels.filter(name='{}-primary'.format(self.name)).count()!=0:
+    if self.composite.channels.filter(name='{}-primary'.format(self.name)).count()==0:
       if self.markers.count()!=0:
         # 1. loop through time series
         for t in range(self.composite.series.ts):
@@ -124,7 +124,7 @@ class Channel(models.Model):
           blank = np.zeros(self.composite.shape())
 
           for i, marker in enumerate(markers):
-            print('primary for composite {} {} {} channel {} | t{} marker {}/{}'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name, t, i+1, len(markers)), end='\n' if t+1==self.composite.series.ts else '\r')
+            print('primary for composite {} {} {} channel {} | t{}/{}'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name, t, self.composite.series.ts), end='\n' if t+1==self.composite.series.ts else '\r')
             blank[marker.c-3:marker.c+2, marker.r-3:marker.r+2] = 255
 
           marker_channel, marker_channel_created = self.composite.channels.get_or_create(name='{}-primary'.format(self.name))
@@ -159,7 +159,7 @@ class Channel(models.Model):
 
             for r in range(blank.shape[0]):
               for c in range(blank.shape[1]):
-                print('region primary for composite {} {} {} channel {} | t{} region {} r{} c{}'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name, t, name, r, c), end='\n' if t+1==self.composite.series.ts else '\r')
+                print('region primary for composite {} {} {} channel {} | t{}/{} region {} r{} c{}'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name, t, self.composite.series.ts, name, r, c), end='\n' if t+1==self.composite.series.ts else '\r')
                 up = blank[:r,c]
                 down = blank[r:,c]
                 left = blank[r,:c]
