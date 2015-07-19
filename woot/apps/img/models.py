@@ -113,7 +113,7 @@ class Channel(models.Model):
     return gon, gon_created
 
   def primary(self):
-    if self.composite.channels.filter(name='{}-primary'.format(self.name)).count()==0:
+    if self.composite.channels.filter(name='{}-primary'.format(self.name)).count()!=0:
       if self.markers.count()!=0:
         # 1. loop through time series
         for t in range(self.composite.series.ts):
@@ -123,8 +123,9 @@ class Channel(models.Model):
           # blank image
           blank = np.zeros(self.composite.shape())
 
-          for marker in markers:
-            blank[marker.r-3:marker.r+2, marker.c-3:marker.c+2] = 1
+          for i, marker in enumerate(markers):
+            print('primary for composite {} {} {} channel {} | t{} marker {}/{}'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name, t, i+1, len(markers)), end='\n' if t+1==self.composite.series.ts else '\r')
+            blank[marker.c-3:marker.c+2, marker.r-3:marker.r+2] = 255
 
           marker_channel, marker_channel_created = self.composite.channels.get_or_create(name='{}-primary'.format(self.name))
           blank_gon, blank_gon_created = marker_channel.get_or_create_gon(blank, self.composite.templates.get(name='source'), t)
@@ -154,17 +155,17 @@ class Channel(models.Model):
             blank = np.zeros(self.composite.shape())
 
             for marker in region_markers:
-              blank[marker.r, marker.c] = 1
+              blank[marker.r, marker.c] = 255
 
             for r in range(blank.shape[0]):
               for c in range(blank.shape[1]):
-                print(t, name, r, c)
+                print('region primary for composite {} {} {} channel {} | t{} region {} r{} c{}'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name, t, name, r, c), end='\n' if t+1==self.composite.series.ts else '\r')
                 up = blank[:r,c]
                 down = blank[r:,c]
                 left = blank[r,:c]
                 right = blank[r,c:]
                 if up.sum()>0 and down.sum()>0 and left.sum()>0 and right.sum()>0:
-                  blank[r,c] = 1
+                  blank[r,c] = 255
 
             blank_sum += blank
 
