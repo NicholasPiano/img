@@ -78,27 +78,27 @@ class Command(BaseCommand):
     # 3. save data
     # 4. make region tracks and instances
 
-    # for data_file in composite.data_files.filter(data_type='regions'):
-    #   data = data_file.load()
-    #   for i, region_prototype in enumerate(data):
-    #     region_track, region_track_created = composite.region_tracks.get_or_create(experiment=composite.experiment,
-    #                                                                                series=composite.series,
-    #                                                                                composite=composite,
-    #                                                                                name=region_prototype['region'])
-    #
-    #     region_track_instance, region_track_instance_created = region_track.instances.get_or_create(experiment=composite.experiment,
-    #                                                                                                 series=composite.series,
-    #                                                                                                 composite=composite,
-    #                                                                                                 t=int(region_prototype['t']))
-    #
-    #     region_track_marker, region_track_marker_created = region_track_instance.markers.get_or_create(experiment=composite.experiment,
-    #                                                                                                    series=composite.series,
-    #                                                                                                    composite=composite,
-    #                                                                                                    region_track=region_track,
-    #                                                                                                    r=int(region_prototype['r']),
-    #                                                                                                    c=int(region_prototype['c']))
-    #
-    #     print('step03 | processing region marker ({}/{})... {} tracks, {} instances, {} markers'.format(i+1,len(data),composite.region_tracks.count(), composite.region_track_instances.count(), composite.region_markers.count()), end='\n' if i==len(data)-1 else '\r')
+    for data_file in composite.data_files.filter(data_type='regions'):
+      data = data_file.load()
+      for i, region_prototype in enumerate(data):
+        region_track, region_track_created = composite.region_tracks.get_or_create(experiment=composite.experiment,
+                                                                                   series=composite.series,
+                                                                                   composite=composite,
+                                                                                   name=region_prototype['region'])
+
+        region_track_instance, region_track_instance_created = region_track.instances.get_or_create(experiment=composite.experiment,
+                                                                                                    series=composite.series,
+                                                                                                    composite=composite,
+                                                                                                    t=int(region_prototype['t']))
+
+        region_track_marker, region_track_marker_created = region_track_instance.markers.get_or_create(experiment=composite.experiment,
+                                                                                                       series=composite.series,
+                                                                                                       composite=composite,
+                                                                                                       region_track=region_track,
+                                                                                                       r=int(region_prototype['r']),
+                                                                                                       c=int(region_prototype['c']))
+
+        print('step03 | processing region marker ({}/{})... {} tracks, {} instances, {} markers'.format(i+1,len(data),composite.region_tracks.count(), composite.region_track_instances.count(), composite.region_markers.count()), end='\n' if i==len(data)-1 else '\r')
 
     ### MARKERS
     for data_file in composite.data_files.filter(data_type='markers'):
@@ -118,7 +118,7 @@ class Command(BaseCommand):
                                                                       series=composite.series,
                                                                       composite=composite,
                                                                       track=track,
-                                                                      r=int(marker_prototype['r']),
-                                                                      c=int(marker_prototype['c']))
+                                                                      r=int(marker_prototype['R']),
+                                                                      c=int(marker_prototype['C']))
 
         print('step03 | processing marker ({}/{})... {} tracks, {} instances, {} markers'.format(i+1,len(data),composite.tracks.count(), composite.track_instances.count(), composite.markers.count()), end='\n' if i==len(data)-1 else '\r')

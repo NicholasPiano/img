@@ -41,8 +41,8 @@ class Marker(models.Model):
   experiment = models.ForeignKey(Experiment, related_name='markers')
   series = models.ForeignKey(Series, related_name='markers')
   composite = models.ForeignKey(Composite, related_name='markers')
-  channel = models.ForeignKey(Channel, related_name='markers')
-  gon = models.ForeignKey(Gon, related_name='markers')
+  channel = models.ForeignKey(Channel, related_name='markers', null=True)
+  gon = models.ForeignKey(Gon, related_name='markers', null=True)
   track = models.ForeignKey(Track, related_name='markers')
   track_instance = models.ForeignKey(TrackInstance, related_name='markers')
 
