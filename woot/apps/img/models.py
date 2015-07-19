@@ -46,6 +46,9 @@ class Composite(models.Model):
     else:
       return None, False, 'does not match series.'
 
+  def shape(self, d=2):
+    return self.series.shape(d)
+
 class Template(models.Model):
   # connections
   composite = models.ForeignKey(Composite, related_name='templates')
@@ -89,23 +92,77 @@ class Channel(models.Model):
     pass
 
   # methods
+  def region_labels(self):
+    return np.unique([region_marker.region_track.name for region_marker in self.region_markers.all()])
+
+  def get_or_create_gon(self, array, template, t, r=0, c=0, z=0, rs=None, cs=None, zs=1, path=None):
+    # self.defaults
+    rs = self.composite.series.rs if rs is None else rs
+    cs = self.composite.series.cs if cs is None else cs
+    path = self.composite.experiment.composite_path if path is None else path
+
+    # build
+    gon, gon_created = self.gons.get_or_create(experiment=self.composite.experiment, series=self.composite.series, composite=self.composite, t=t)
+    gon.set_origin(r,c,z,t)
+    gon.set_extent(rs,cs,zs)
+
+    gon.array = array
+    gon.save_array(path, template)
+    gon.save()
+
+    return gon, gon_created
+
   def primary(self):
-    if self.tracks.count()!=0:
+    if self.markers.count()!=0:
       # 1. loop through time series
       for t in range(self.series.ts):
         print(t)
 
     else:
-      print('primary for composite {} {} {} channel {} | no tracks have been defined.'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name))
+      print('primary for composite {} {} {} channel {} | no markers have been defined.'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name))
 
   def region_primary(self):
-    if self.region_tracks.count()!=0:
-      # 1. loop through time series
-      for t in range(self.series.ts):
-        print(t)
+    if self.composite.channels.filter(name='-regions').count()!=0:
+      if self.region_markers.count()!=0:
+        # 1. loop through time series
+        for t in range(self.composite.series.ts):
+          # load all markers for this frame
+          markers = self.region_markers.filter(region_track_instance__t=t)
+
+          blank_sum = np.zeros(self.composite.shape()) # gather all primaries
+
+          for name in self.region_labels():
+
+            # markers per region
+            region_markers = markers.filter(region_track__name=name)
+
+            # blank image
+            blank = np.zeros(self.composite.shape())
+
+            for marker in region_markers:
+              blank[marker.r, marker.c] = 1
+
+            for r in range(blank.shape[0]):
+              for c in range(blank.shape[1]):
+                print(t, name, r, c)
+                up = blank[:r,c]
+                down = blank[r:,c]
+                left = blank[r,:c]
+                right = blank[r,c:]
+                if up.sum()>0 and down.sum()>0 and left.sum()>0 and right.sum()>0:
+                  blank[r,c] = 1
+
+            blank_sum += blank
+
+          # create channel and add blank sum
+          region_channel, region_channel_created = self.composite.channels.get_or_create(name='-regions')
+          blank_sum_gon = region_channel.get_or_create_gon(blank_sum, self.composite.templates.get(name='source'), t)
+
+      else:
+        print('region primary for composite {} {} {} channel {} | no region markers have been defined.'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name))
 
     else:
-      print('primary for composite {} {} {} channel {} | no tracks have been defined.'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name))
+      print('region primary for composite {} {} {} channel {} has already been created.'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name))
 
 class Gon(models.Model):
   # connections

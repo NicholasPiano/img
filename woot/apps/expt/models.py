@@ -167,7 +167,7 @@ class Series(models.Model):
   def compose(self):
 
     # composite
-    composite, composite_created = self.composites.get_or_create(experiment=self.experiment)
+    composite, composite_created = self.composites.get_or_create(experiment=self.experiment, id_token=generate_id_token('expt', 'Composite'))
 
     # templates
     for template in self.experiment.templates.all():
