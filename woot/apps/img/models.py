@@ -113,16 +113,17 @@ class Channel(models.Model):
     return gon, gon_created
 
   def primary(self):
-    if self.markers.count()!=0:
-      # 1. loop through time series
-      for t in range(self.series.ts):
-        print(t)
+    if self.composite.channels.filter(name='-primary').count()!=0:
+      if self.markers.count()!=0:
+        # 1. loop through time series
+        for t in range(self.series.ts):
+          print(t)
 
-    else:
-      print('primary for composite {} {} {} channel {} | no markers have been defined.'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name))
+      else:
+        print('primary for composite {} {} {} channel {} | no markers have been defined.'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name))
 
   def region_primary(self):
-    if self.composite.channels.filter(name='-regions').count()!=0:
+    if self.composite.channels.filter(name='{}-regions'.format(self.name)).count()!=0:
       if self.region_markers.count()!=0:
         # 1. loop through time series
         for t in range(self.composite.series.ts):
@@ -155,7 +156,7 @@ class Channel(models.Model):
             blank_sum += blank
 
           # create channel and add blank sum
-          region_channel, region_channel_created = self.composite.channels.get_or_create(name='-regions')
+          region_channel, region_channel_created = self.composite.channels.get_or_create(name='{}-regions'.format(self.name))
           blank_sum_gon = region_channel.get_or_create_gon(blank_sum, self.composite.templates.get(name='source'), t)
 
       else:
