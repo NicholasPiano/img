@@ -89,12 +89,19 @@ class Channel(models.Model):
     marker_channel_primary_name = marker_channel.primary()
 
     # 2. create pipeline and run
-    pipeline = self.composite.experiment.pipelines.get(name='markers')
-    suffix_id = pipeline.run(primary_channel_name=marker_channel_primary_name, secondary_channel_name=self.name)
+    suffix_id = self.composite.experiment.save_marker_pipeline(primary_channel_name=marker_channel_primary_name, secondary_channel_name=self.name)
+    self.composite.experiment.run_pipeline()
 
     # 3. import masks and create new mask channel
-    cp_out_file_list = [f for f in os.listdir(self.composite.experiment.cp_path) if suffix_id in f]
+    cp_out_file_list = [f for f in os.listdir(self.composite.experiment.cp_path) if (suffix_id in f and '.tiff' in f)]
     # make new channel that gets put in mask path
+    cp_template = self.composite.templates.get(name='cp')
+    mask_template = self.composite.templates.get(name='mask')
+    mask_channel = self.composite.channels.create(name=suffix_id)
+
+    for cp_out_file in cp_out_file_list:
+      metadata = cp_template.dict(cp_out_file)
+
 
     # 4. import datafiles and access data
     # 5. create cells and cell instances from tracks
@@ -106,7 +113,7 @@ class Channel(models.Model):
   def region_labels(self):
     return np.unique([region_marker.region_track.name for region_marker in self.region_markers.all()])
 
-  def get_or_create_gon(self, array, template, t, r=0, c=0, z=0, rs=None, cs=None, zs=1, path=None):
+  def get_or_create_gon(self, array, t, r=0, c=0, z=0, rs=None, cs=None, zs=1, path=None):
     # self.defaults
     rs = self.composite.series.rs if rs is None else rs
     cs = self.composite.series.cs if cs is None else cs
@@ -118,8 +125,25 @@ class Channel(models.Model):
     gon.set_extent(rs,cs,zs)
 
     gon.array = array
-    gon.save_array(path, template)
+    gon.save_array(path, self.composite.templates.get(name='source'))
     gon.save()
+
+    return gon, gon_created
+
+  def get_or_create_mask(self, array, t, r=0, c=0, rs=None, cs=None, path=None):
+    # self.defaults
+    rs = self.composite.series.rs if rs is None else rs
+    cs = self.composite.series.cs if cs is None else cs
+    path = self.composite.experiment.composite_path if path is None else path
+
+    # build
+    mask, mask_created = self.masks.get_or_create(experiment=self.composite.experiment, series=self.composite.series, composite=self.composite, t=t)
+    mask.set_origin(r,c,t)
+    mask.set_extent(rs,cs)
+
+    mask.array = array
+    mask.save_array(path, self.composite.templates.get(name='mask'))
+    mask.save()
 
     return gon, gon_created
 
@@ -142,7 +166,7 @@ class Channel(models.Model):
 
           marker_channel, marker_channel_created = self.composite.channels.get_or_create(name='{}-primary'.format(self.name))
           channel_name = marker_channel.name
-          blank_gon, blank_gon_created = marker_channel.get_or_create_gon(blank, self.composite.templates.get(name='source'), t)
+          blank_gon, blank_gon_created = marker_channel.get_or_create_gon(blank, t)
 
         return channel_name
 
@@ -151,8 +175,6 @@ class Channel(models.Model):
 
     else:
       print('primary for composite {} {} {} channel {} has already been created.'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name))
-
-
 
   def region_primary(self):
     if self.composite.channels.filter(name='{}-regions'.format(self.name)).count()==0:
@@ -189,7 +211,7 @@ class Channel(models.Model):
 
           # create channel and add blank sum
           region_channel, region_channel_created = self.composite.channels.get_or_create(name='{}-regions'.format(self.name))
-          blank_sum_gon, blank_sum_gon_created = region_channel.get_or_create_gon(blank_sum, self.composite.templates.get(name='source'), t)
+          blank_sum_gon, blank_sum_gon_created = region_channel.get_or_create_gon(blank_sum, t)
 
       else:
         print('region primary for composite {} {} {} channel {} | no region markers have been defined.'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name))
@@ -328,8 +350,6 @@ class Mod(models.Model):
 ### MASKS
 class MaskChannel(models.Model):
   # connections
-  experiment = models.ForeignKey(Experiment, related_name='mask_channels')
-  series = models.ForeignKey(Series, related_name='mask_channels')
   composite = models.ForeignKey(Composite, related_name='mask_channels')
 
   # properties
@@ -355,57 +375,37 @@ class Mask(models.Model):
   # 1. origin
   r = models.IntegerField(default=0)
   c = models.IntegerField(default=0)
-  z = models.IntegerField(default=0)
   t = models.IntegerField(default=-1)
 
   # 2. extent
   rs = models.IntegerField(default=-1)
   cs = models.IntegerField(default=-1)
-  zs = models.IntegerField(default=1)
 
   # 3. data
   array = None
 
   # methods
-  def set_origin(self, r, c, z, t):
+  def set_origin(self, r, c, t):
     self.r = r
     self.c = c
-    self.z = z
     self.t = t
     self.save()
 
-  def set_extent(self, rs, cs, zs):
+  def set_extent(self, rs, cs):
     self.rs = rs
     self.cs = cs
-    self.zs = zs
     self.save()
 
   def shape(self):
-    if self.zs==1:
-      return (self.rs, self.cs)
-    else:
-      return (self.rs, self.cs, self.zs)
+    return (self.rs, self.cs)
 
   def t_str(self):
     return str('0'*(len(str(self.series.ts)) - len(str(self.t))) + str(self.t))
-
-  def z_str(self, z=None):
-    return str('0'*(len(str(self.series.zs)) - len(str(self.z if z is None else z))) + str(self.z if z is None else z))
 
   def load(self):
     array = imread(self.url)
     self.array = exposure.rescale_intensity(array * 1.0) * (len(np.unique(array)) - 1).astype(int) # rescale to contain integer grayscale id's.
     return self.array
-
-  def save_array(self, root, template):
-    if not os.path.exists(root):
-      os.makedirs(root)
-
-    self.file_name = template.rv.format(self.experiment.name, self.series.name, self.channel.name, self.t, '{}')
-    self.url = os.path.join(root, file_name).format(self.z)
-
-    imsave(self.url, self.array)
-    self.save()
 
 ### DATA
 class DataFile(models.Model):

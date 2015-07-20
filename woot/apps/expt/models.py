@@ -136,16 +136,32 @@ class Experiment(models.Model):
     else:
       return None, False, 'does not match template.'
 
-  def save_marker_pipeline(self, primary_channel_name, secondary_channel_name):
+  def save_marker_pipeline(self, primary_channel_name=None, secondary_channel_name=None):
     # 1. make unique key
-    # 2. format and save file
+    unique_key = '{}{}-{}'.format(primary_channel_name, secondary_channel_name, random_string())
 
-  def save_region_pipeline(self, primary_channel_name, secondary_channel_name):
+    # 2. format and save file
+    pipeline_text = marker_pipeline(unique_key, primary_channel_name, secondary_channel_name)
+    with open(os.path.join(self.cp_path, 'markers.cppipe')) as open_pipeline_file:
+      open_pipeline_file.write(pipeline_text)
+
+    return unique_key
+
+  def save_region_pipeline(self, primary_channel_name=None, secondary_channel_name=None):
     # 1. make unique key
-    # 2. format and save file
+    unique_key = '{}{}-{}'.format(primary_channel_name, secondary_channel_name, random_string())
 
-  def run_pipeline(self, pipeline_name):
-    pipeline = os.path.join(self.pipeline_path, pipeline_name)
+    # 2. format and save file
+    pipeline_text = region_pipeline(unique_key, primary_channel_name, secondary_channel_name)
+    with open(os.path.join(self.cp_path, 'regions.cppipe')) as open_pipeline_file:
+      open_pipeline_file.write(pipeline_text)
+
+    return unique_key
+
+  def run_pipeline(self, key='marker'):
+    pipeline = os.path.join(self.pipeline_path, 'markers.cppipe')
+    if key!='marker':
+      pipeline = os.path.join(self.pipeline_path, 'regions.cppipe')
     cmd = '/Applications/CellProfiler.app/Contents/MacOS/CellProfiler -c -r -i {} -o {} -p {}'.format(self.composite_path, self.cp_path, pipeline)
     subprocess.call(cmd, shell=True)
 
