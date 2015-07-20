@@ -82,15 +82,19 @@ class Channel(models.Model):
   def segment(self, marker_channel_name):
 
     # setup
+    print('creating marker channel')
     marker_channel = self.composite.channels.get(name=marker_channel_name)
 
     # 1. create primary from markers with marker_channel
+    print('running primary')
     marker_channel_primary_name = marker_channel.primary()
 
     # 2. create pipeline and run
+    print('run pipeline')
     suffix_id = self.composite.experiment.save_marker_pipeline(primary_channel_name=marker_channel_primary_name, secondary_channel_name=self.name)
     self.composite.experiment.run_pipeline()
 
+    print('import masks')
     # 3. import masks and create new mask channel
     cp_out_file_list = [f for f in os.listdir(self.composite.experiment.cp_path) if (suffix_id in f and '.tiff' in f)]
     # make new channel that gets put in mask path
@@ -103,6 +107,7 @@ class Channel(models.Model):
       metadata = cp_template.dict(cp_out_file)
       mask_channel.get_or_create_mask(array, int(metadata['t']))
 
+    print('import data files')
     # 4. import datafiles and access data
     data_file_list = [f for f in os.listdir(self.composite.experiment.cp_path) if (suffix_id in f and '.csv' in f)]
     for df_name in data_file_list:
