@@ -278,8 +278,115 @@ class CellMask(models.Model):
 
   # properties
   gray_value_id = models.IntegerField(default=0)
-  area = models.IntegerField(default=0)
+
+  r = models.IntegerField(default=0)
+  c = models.IntegerField(default=0)
+  z = models.IntegerField(default=0)
+  t = models.IntegerField(default=0)
+
+  vr = models.IntegerField(default=0)
+  vc = models.IntegerField(default=0)
+  vz = models.IntegerField(default=0)
+
+  # 4. cell profiler
+  AreaShape_Area = models.IntegerField(default=0)
+  AreaShape_Compactness = models.FloatField(default=0.0)
+  AreaShape_Eccentricity = models.FloatField(default=0.0)
+  AreaShape_EulerNumber = models.FloatField(default=0.0)
+  AreaShape_Extent = models.FloatField(default=0.0)
+  AreaShape_FormFactor = models.FloatField(default=0.0)
+  AreaShape_MajorAxisLength = models.FloatField(default=0.0)
+  AreaShape_MaximumRadius = models.FloatField(default=0.0)
+  AreaShape_MeanRadius = models.FloatField(default=0.0)
+  AreaShape_MedianRadius = models.FloatField(default=0.0)
+  AreaShape_MinorAxisLength = models.FloatField(default=0.0)
+  AreaShape_Orientation = models.FloatField(default=0.0)
+  AreaShape_Perimeter = models.FloatField(default=0.0)
+  AreaShape_Solidity = models.FloatField(default=0.0)
+  Location_Center_X = models.FloatField(default=0.0)
+  Location_Center_Y = models.FloatField(default=0.0)
 
   # methods
+  def R(self):
+    return self.r*self.experiment.rmop
+
+  def C(self):
+    return self.c*self.experiment.cmop
+
+  def Z(self):
+    return self.z*self.experiment.zmop
+
+  def T(self):
+    return self.t*self.experiment.tpf
+
+  def V(self):
+    return np.sqrt(self.VR()**2 + self.VC()**2)
+
+  def VR(self):
+    return self.vr*self.experiment.rmop / self.experiment.tpf
+
+  def VC(self):
+    return self.vc*self.experiment.cmop / self.experiment.tpf
+
+  def VZ(self):
+    return self.vz*self.experiment.zmop / self.experiment.tpf
+
+  def A(self):
+    return self.AreaShape_Area*self.experiment.rmop*self.experiment.cmop
+
+  def raw_line(self):
+    return '{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{} \n'.format(self.experiment.name,
+                                                                                                  self.series.name,
+                                                                                                  self.cell.pk,
+                                                                                                  self.r,
+                                                                                                  self.c,
+                                                                                                  self.z,
+                                                                                                  self.t,
+                                                                                                  self.vr,
+                                                                                                  self.vc,
+                                                                                                  self.vz,
+                                                                                                  self.region.index,
+                                                                                                  self.AreaShape_Area,
+                                                                                                  self.AreaShape_Compactness,
+                                                                                                  self.AreaShape_Eccentricity,
+                                                                                                  self.AreaShape_EulerNumber,
+                                                                                                  self.AreaShape_Extent,
+                                                                                                  self.AreaShape_FormFactor,
+                                                                                                  self.AreaShape_MajorAxisLength,
+                                                                                                  self.AreaShape_MaximumRadius,
+                                                                                                  self.AreaShape_MeanRadius,
+                                                                                                  self.AreaShape_MedianRadius,
+                                                                                                  self.AreaShape_MinorAxisLength,
+                                                                                                  self.AreaShape_Orientation,
+                                                                                                  self.AreaShape_Perimeter,
+                                                                                                  self.AreaShape_Solidity)
+  def line(self):
+    return '{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(self.experiment.name,
+                                                                                                    self.series.name,
+                                                                                                    self.cell.pk,
+                                                                                                    self.R(),
+                                                                                                    self.C(),
+                                                                                                    self.Z(),
+                                                                                                    self.t,
+                                                                                                    self.T(),
+                                                                                                    self.VR(),
+                                                                                                    self.VC(),
+                                                                                                    self.VZ(),
+                                                                                                    self.region.index,
+                                                                                                    self.A(),
+                                                                                                    self.AreaShape_Compactness,
+                                                                                                    self.AreaShape_Eccentricity,
+                                                                                                    self.AreaShape_EulerNumber,
+                                                                                                    self.AreaShape_Extent,
+                                                                                                    self.AreaShape_FormFactor,
+                                                                                                    self.AreaShape_MajorAxisLength,
+                                                                                                    self.AreaShape_MaximumRadius,
+                                                                                                    self.AreaShape_MeanRadius,
+                                                                                                    self.AreaShape_MedianRadius,
+                                                                                                    self.AreaShape_MinorAxisLength,
+                                                                                                    self.AreaShape_Orientation,
+                                                                                                    self.AreaShape_Perimeter,
+                                                                                                    self.AreaShape_Solidity)
+
   def load(self):
     return self.mask.load()

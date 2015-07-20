@@ -91,7 +91,7 @@ class Channel(models.Model):
 
     # 2. create pipeline and run
     print('run pipeline')
-    suffix_id = self.composite.experiment.save_marker_pipeline(series_name=self.composite.series.name, primary_channel_name=marker_channel_primary_name, secondary_channel_name=self.name)
+    unique, suffix_id = self.composite.experiment.save_marker_pipeline(series_name=self.composite.series.name, primary_channel_name=marker_channel_primary_name, secondary_channel_name=self.name)
     self.composite.experiment.run_pipeline()
 
     print('import masks')
@@ -109,11 +109,48 @@ class Channel(models.Model):
 
     print('import data files')
     # 4. import datafiles and access data
-    data_file_list = [f for f in os.listdir(self.composite.experiment.cp_path) if (suffix_id in f and '.csv' in f)]
+    data_file_list = [f for f in os.listdir(self.composite.experiment.cp_path) if (unique in f and '.csv' in f)]
     for df_name in data_file_list:
       data_file, data_file_created, status = self.composite.get_or_create_data_file(self.composite.experiment.cp_path, df_name)
 
     # 5. create cells and cell instances from tracks
+    cell_data_file = self.composite.data_files.get(id_token=unique, data_type='Cells')
+    data = cell_data_file.load()
+
+    # load masks and associate with grayscale id's
+    for t in range(self.composite.series.ts):
+      mask_mask = mask_channel.masks.get(t=t)
+      mask = mask_mask.load()
+
+      t_data = list(filter(lambda d: int(d['ImageNumber'])-1==t, data))
+
+      markers = marker_channel.markers.filter(track_instance__t=t)
+      for marker in markers:
+        # 1. create cell
+        cell, cell_created = self.composite.experiment.cells.get_or_create(series=self.composite.series, track=marker.track)
+
+        # 2. create cell instance
+        cell_instance, cell_instance_created = cell.instances.get_or_create(experiment=cell.experiment,
+                                                                            series=cell.series,
+                                                                            track_instance=marker.track_instance)
+
+        # 3. create cell mask
+        cell_mask = cell_instance.masks.create(experiment=cell.experiment,
+                                               series=cell.series,
+                                               cell=cell,
+                                               mask=mask_mask,
+                                               marker=marker,
+                                               gray_value_id=mask[marker.r, marker.c])
+
+        cell_mask_data = list(filter(lambda d: int(d['ObjectNumber'])==cell_mask.gray_value_id, t_data))[0]
+
+        # 4. assign data
+        cell_mask.AreaShape_Area = int(cell_mask_data['AreaShape_Area'])
+        cell_mask.t = t
+        cell_mask.AreaShape_Perimeter = int(cell_mask_data['AreaShape_Perimeter'])
+        cell_mask.r = cell_mask.marker.r
+        cell_mask.c = cell_mask.marker.c
+        cell_mask.save()
 
   def segment_regions(self, region_marker_channel_name):
     pass
@@ -414,7 +451,7 @@ class Mask(models.Model):
 
   def load(self):
     array = imread(self.url)
-    self.array = exposure.rescale_intensity(array * 1.0) * (len(np.unique(array)) - 1).astype(int) # rescale to contain integer grayscale id's.
+    self.array = (exposure.rescale_intensity(array * 1.0) * (len(np.unique(array)) - 1)).astype(int) # rescale to contain integer grayscale id's.
     return self.array
 
   def save_array(self, root, template):
@@ -451,8 +488,8 @@ class DataFile(models.Model):
     self.data = []
     with open(self.url) as df:
       headers = []
-      for line in df.readlines():
-        if 'expt' in line: # title
+      for n, line in enumerate(df.readlines()):
+        if n==0: # title
           headers = line.rstrip().split(',')
         else:
           line_dict = {}

@@ -138,14 +138,15 @@ class Experiment(models.Model):
 
   def save_marker_pipeline(self, series_name=None, primary_channel_name=None, secondary_channel_name=None):
     # 1. make unique key
-    unique_key = '{}{}-{}'.format(primary_channel_name, secondary_channel_name, random_string())
+    unique = random_string()
+    unique_key = '{}{}-{}'.format(primary_channel_name, secondary_channel_name, unique)
 
     # 2. format and save file
-    pipeline_text = marker_pipeline('{}_s{}_ch{}_'.format(self.name, series_name, unique_key), unique_key, primary_channel_name, secondary_channel_name)
+    pipeline_text = marker_pipeline('{}_s{}_{}_'.format(self.name, series_name, unique), unique_key, primary_channel_name, secondary_channel_name)
     with open(os.path.join(self.pipeline_path, 'markers.cppipe'), 'w+') as open_pipeline_file:
       open_pipeline_file.write(pipeline_text)
 
-    return unique_key
+    return unique, unique_key
 
   def save_region_pipeline(self, primary_channel_name=None, secondary_channel_name=None):
     # 1. make unique key

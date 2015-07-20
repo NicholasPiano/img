@@ -177,7 +177,7 @@ ExportToSpreadsheet:[module_num:6|svn_version:\'Unknown\'|variable_revision_numb
     Press button to select measurements to export:\n\
     Representation of Nan/Inf:NaN\n\
     Add a prefix to file names?:Yes\n\
-    Filename prefix\x3A:{experiment_prefix}\n\
+    Filename prefix\x3A{experiment_prefix}\n\
     Overwrite without warning?:Yes\n\
     Data to export:Do not use\n\
     Combine these object measurements with those of the previous object?:No\n\
