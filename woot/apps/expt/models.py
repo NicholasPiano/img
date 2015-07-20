@@ -5,14 +5,15 @@ from django.db import models
 
 # local
 from apps.expt.data import *
-from apps.expt.util import generate_id_token
-from apps.expt.pipeline import pipeline_base
+from apps.expt.util import generate_id_token, random_string
+from apps.expt.pipeline import marker_pipeline, region_pipeline
 
 # util
 import os
 import re
 from scipy.misc import imread, imsave
 import numpy as np
+import subprocess
 
 spacer = ' ' *  20
 
@@ -143,6 +144,19 @@ class Experiment(models.Model):
     pipeline.save_file(**kwargs)
     pipeline.save()
     return pipeline
+
+  def save_marker_pipeline(self, primary_channel_name, secondary_channel_name):
+    # 1. make unique key
+    # 2. format and save file
+
+  def save_region_pipeline(self, primary_channel_name, secondary_channel_name):
+    # 1. make unique key
+    # 2. format and save file
+
+  def run_pipeline(self, pipeline_name):
+    pipeline = os.path.join(self.pipeline_path, pipeline_name)
+    cmd = '/Applications/CellProfiler.app/Contents/MacOS/CellProfiler -c -r -i {} -o {} -p {}'.format(self.composite_path, self.cp_path, pipeline)
+    subprocess.call(cmd, shell=True)
 
 class Series(models.Model):
   # connections
@@ -297,23 +311,3 @@ class Path(models.Model):
 
   def load(self):
     return imread(self.url)
-
-class Pipeline(models.Model):
-  # connections
-  experiment = models.ForeignKey(Experiment, related_name='pipelines')
-  template = models.ForeignKey(Template, related_name='pipelines')
-
-  # properties
-  name = models.CharField(max_length=255)
-  url = models.CharField(max_length=255)
-
-  # methods
-  def save_file(self, **kwargs):
-    text = pipeline_base.format(kwargs)
-
-    with open(url, 'w+') as pipeline_file:
-      pipeline_file.write(text)
-
-  def run(self):
-    pass
-    # run cell profiler pipeline with some options

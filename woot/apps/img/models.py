@@ -80,15 +80,26 @@ class Channel(models.Model):
   def __str__(self):
     return '{} > {}'.format(self.composite.id_token, self.name)
 
-  def segment(self, marker_channel, pipeline_name):
-    pass
+  def segment(self, marker_channel_name):
+
+    # setup
+    marker_channel = self.composite.channels.get(name=marker_channel_name)
+
     # 1. create primary from markers with marker_channel
+    marker_channel_primary_name = marker_channel.primary()
+
     # 2. create pipeline and run
+    pipeline = self.composite.experiment.pipelines.get(name='markers')
+    suffix_id = pipeline.run(primary_channel_name=marker_channel_primary_name, secondary_channel_name=self.name)
+
     # 3. import masks and create new mask channel
+    cp_out_file_list = [f for f in os.listdir(self.composite.experiment.cp_path) if suffix_id in f]
+    # make new channel that gets put in mask path
+
     # 4. import datafiles and access data
     # 5. create cells and cell instances from tracks
 
-  def segment_regions(self, region_marker_channel, pipeline_name):
+  def segment_regions(self, region_marker_channel_name):
     pass
 
   # methods
@@ -115,6 +126,8 @@ class Channel(models.Model):
   def primary(self):
     if self.composite.channels.filter(name='{}-primary'.format(self.name)).count()==0:
       if self.markers.count()!=0:
+        channel_name = ''
+
         # 1. loop through time series
         for t in range(self.composite.series.ts):
           # load all markers for this frame
@@ -124,17 +137,22 @@ class Channel(models.Model):
           blank = np.zeros(self.composite.shape())
 
           for i, marker in enumerate(markers):
-            print('primary for composite {} {} {} channel {} | t{}/{}'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name, t, self.composite.series.ts), end='\n' if t+1==self.composite.series.ts else '\r')
+            print('primary for composite {} {} {} channel {} | t{}/{}'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name, t, self.composite.series.ts), end='\n' if t==self.composite.series.ts-1 else '\r')
             blank[marker.c-3:marker.c+2, marker.r-3:marker.r+2] = 255
 
           marker_channel, marker_channel_created = self.composite.channels.get_or_create(name='{}-primary'.format(self.name))
+          channel_name = marker_channel.name
           blank_gon, blank_gon_created = marker_channel.get_or_create_gon(blank, self.composite.templates.get(name='source'), t)
+
+        return channel_name
 
       else:
         print('primary for composite {} {} {} channel {} | no markers have been defined.'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name))
 
     else:
       print('primary for composite {} {} {} channel {} has already been created.'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name))
+
+
 
   def region_primary(self):
     if self.composite.channels.filter(name='{}-regions'.format(self.name)).count()==0:
@@ -159,7 +177,7 @@ class Channel(models.Model):
 
             for r in range(blank.shape[0]):
               for c in range(blank.shape[1]):
-                print('region primary for composite {} {} {} channel {} | t{}/{} region {} r{} c{}'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name, t, self.composite.series.ts, name, r, c), end='\n' if t+1==self.composite.series.ts else '\r')
+                print('region primary for composite {} {} {} channel {} | t{}/{} region {} r{} c{}'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name, t, self.composite.series.ts-1, name, r, c), end='\n' if t==self.composite.series.ts-1 else '\r')
                 up = blank[:r,c]
                 down = blank[r:,c]
                 left = blank[r,:c]

@@ -66,5 +66,5 @@ class Command(BaseCommand):
     composite = Composite.objects.get(experiment__name=options['expt'], series__name=options['series'])
 
     # get channel for region_markers
-    channel = composite.channels.get(name='-zcomp')
-    channel.primary()
+    channel = composite.channels.get(name='-zbf')
+    channel.region_primary()
