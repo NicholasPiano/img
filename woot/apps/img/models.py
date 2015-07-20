@@ -140,14 +140,14 @@ class Channel(models.Model):
                                                cell=cell,
                                                mask=mask_mask,
                                                marker=marker,
-                                               gray_value_id=mask[marker.r, marker.c])
+                                               gray_value_id=mask[marker.c, marker.r])
 
         cell_mask_data = list(filter(lambda d: int(d['ObjectNumber'])==cell_mask.gray_value_id, t_data))[0]
 
         # 4. assign data
-        cell_mask.AreaShape_Area = int(cell_mask_data['AreaShape_Area'])
+        cell_mask.AreaShape_Area = float(cell_mask_data['AreaShape_Area'])
         cell_mask.t = t
-        cell_mask.AreaShape_Perimeter = int(cell_mask_data['AreaShape_Perimeter'])
+        cell_mask.AreaShape_Perimeter = float(cell_mask_data['AreaShape_Perimeter'])
         cell_mask.r = cell_mask.marker.r
         cell_mask.c = cell_mask.marker.c
         cell_mask.save()
