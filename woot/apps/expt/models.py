@@ -136,15 +136,6 @@ class Experiment(models.Model):
     else:
       return None, False, 'does not match template.'
 
-  def create_pipeline(self, name, **kwargs):
-    template = self.templates.get(name='pipeline')
-    name = template.rv.format(name, generate_id_token('expt','Pipeline'))
-    url = os.path.join(self.pipeline_path, name)
-    pipeline = self.pipelines.create(template=template, name=name, url=url)
-    pipeline.save_file(**kwargs)
-    pipeline.save()
-    return pipeline
-
   def save_marker_pipeline(self, primary_channel_name, secondary_channel_name):
     # 1. make unique key
     # 2. format and save file
