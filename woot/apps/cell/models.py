@@ -389,4 +389,6 @@ class CellMask(models.Model):
                                                                                                     self.AreaShape_Solidity)
 
   def load(self):
-    return self.mask.load()
+    mask = self.mask.load()
+    mask[mask!=self.gray_value_id] = 0
+    return mask
