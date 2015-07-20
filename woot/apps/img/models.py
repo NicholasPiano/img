@@ -33,10 +33,9 @@ class Composite(models.Model):
     # save data on all cell instances
     pass
 
-  def get_or_create_data_file(self, file_name):
+  def get_or_create_data_file(self, root, file_name):
 
     # metadata
-    root = self.experiment.track_path
     template = self.templates.get(name='data')
     metadata = template.dict(file_name)
 
@@ -100,10 +99,15 @@ class Channel(models.Model):
     mask_channel = self.composite.channels.create(name=suffix_id)
 
     for cp_out_file in cp_out_file_list:
+      array = imread(os.path.join(self.composite.experiment.cp_path, cp_out_file))
       metadata = cp_template.dict(cp_out_file)
-
+      mask_channel.get_or_create_mask(array, int(metadata['t']))
 
     # 4. import datafiles and access data
+    data_file_list = [f for f in os.listdir(self.composite.experiment.cp_path) if (suffix_id in f and '.csv' in f)]
+    for df_name in data_file_list:
+      data_file, data_file_created, status = self.composite.get_or_create_data_file(self.composite.experiment.cp_path, df_name)
+
     # 5. create cells and cell instances from tracks
 
   def segment_regions(self, region_marker_channel_name):

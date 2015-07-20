@@ -149,8 +149,8 @@ templates = {
     'rv':r'{}_s{}_ch-{}_t{}_z{}_cp-{}.tiff',
   },
   'data':{
-    'rx':r'^(?P<experiment>.+)_s(?P<series>.+)_type-(?P<type>.+)_(?P<id>[A-Z0-9]{8})\.csv$',
-    'rv':r'{}_s{}_type-{}_{}.csv',
+    'rx':r'^(?P<experiment>.+)_s(?P<series>.+)_(?P<id>[A-Z0-9]{8})_(?P<type>.+)\.csv$',
+    'rv':r'{}_s{}_{}_{}.csv',
   },
   'pipeline':{
     'rx':r'^(?P<name>.+)_(?P<id>[A-Z0-9]{8})\.cppipe$',

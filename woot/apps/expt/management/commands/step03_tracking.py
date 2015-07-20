@@ -66,7 +66,7 @@ class Command(BaseCommand):
 
     for df_name in data_file_list:
       print('step03 | data file {}... '.format(df_name), end='\r')
-      data_file, data_file_created, status = composite.get_or_create_data_file(df_name)
+      data_file, data_file_created, status = composite.get_or_create_data_file(composite.experiment.track_path, df_name)
       print('step03 | data file {}... {}'.format(df_name, status))
 
     ### REGIONS
