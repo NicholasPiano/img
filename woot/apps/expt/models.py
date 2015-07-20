@@ -136,12 +136,12 @@ class Experiment(models.Model):
     else:
       return None, False, 'does not match template.'
 
-  def save_marker_pipeline(self, primary_channel_name=None, secondary_channel_name=None):
+  def save_marker_pipeline(self, series_name=None, primary_channel_name=None, secondary_channel_name=None):
     # 1. make unique key
     unique_key = '{}{}-{}'.format(primary_channel_name, secondary_channel_name, random_string())
 
     # 2. format and save file
-    pipeline_text = marker_pipeline(unique_key, primary_channel_name, secondary_channel_name)
+    pipeline_text = marker_pipeline('{}_s{}_{}_'.format(self.name, series_name, unique_key), unique_key, primary_channel_name, secondary_channel_name)
     with open(os.path.join(self.cp_path, 'markers.cppipe')) as open_pipeline_file:
       open_pipeline_file.write(pipeline_text)
 
