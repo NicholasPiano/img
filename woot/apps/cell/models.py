@@ -21,7 +21,7 @@ class Track(models.Model):
   experiment = models.ForeignKey(Experiment, related_name='tracks')
   series = models.ForeignKey(Series, related_name='tracks')
   composite = models.ForeignKey(Composite, related_name='tracks')
-  channel = models.ForeignKey(Channel, related_name='tracks', null=True)
+  channel = models.ForeignKey(Channel, related_name='tracks')
 
   # properties
   track_id = models.IntegerField(default=0)
@@ -31,6 +31,7 @@ class TrackInstance(models.Model):
   experiment = models.ForeignKey(Experiment, related_name='track_instances')
   series = models.ForeignKey(Series, related_name='track_instances')
   composite = models.ForeignKey(Composite, related_name='track_instances')
+  channel = models.ForeignKey(Channel, related_name='track_instances')
   track = models.ForeignKey(Track, related_name='instances')
 
   # properties

@@ -82,7 +82,7 @@ class Channel(models.Model):
   def segment(self, marker_channel_name):
 
     # setup
-    print('creating marker channel')
+    print('getting marker channel')
     marker_channel = self.composite.channels.get(name=marker_channel_name)
 
     # 1. create primary from markers with marker_channel
@@ -91,7 +91,7 @@ class Channel(models.Model):
 
     # 2. create pipeline and run
     print('run pipeline')
-    suffix_id = self.composite.experiment.save_marker_pipeline(primary_channel_name=marker_channel_primary_name, secondary_channel_name=self.name)
+    suffix_id = self.composite.experiment.save_marker_pipeline(series_name=self.composite.series.name, primary_channel_name=marker_channel_primary_name, secondary_channel_name=self.name)
     self.composite.experiment.run_pipeline()
 
     print('import masks')
@@ -100,7 +100,7 @@ class Channel(models.Model):
     # make new channel that gets put in mask path
     cp_template = self.composite.templates.get(name='cp')
     mask_template = self.composite.templates.get(name='mask')
-    mask_channel = self.composite.channels.create(name=suffix_id)
+    mask_channel = self.composite.mask_channels.create(name=suffix_id)
 
     for cp_out_file in cp_out_file_list:
       array = imread(os.path.join(self.composite.experiment.cp_path, cp_out_file))
@@ -139,23 +139,6 @@ class Channel(models.Model):
 
     return gon, gon_created
 
-  def get_or_create_mask(self, array, t, r=0, c=0, rs=None, cs=None, path=None):
-    # self.defaults
-    rs = self.composite.series.rs if rs is None else rs
-    cs = self.composite.series.cs if cs is None else cs
-    path = self.composite.experiment.composite_path if path is None else path
-
-    # build
-    mask, mask_created = self.masks.get_or_create(experiment=self.composite.experiment, series=self.composite.series, composite=self.composite, t=t)
-    mask.set_origin(r,c,t)
-    mask.set_extent(rs,cs)
-
-    mask.array = array
-    mask.save_array(path, self.composite.templates.get(name='mask'))
-    mask.save()
-
-    return gon, gon_created
-
   def primary(self):
     if self.composite.channels.filter(name='{}-primary'.format(self.name)).count()==0:
       if self.markers.count()!=0:
@@ -184,6 +167,7 @@ class Channel(models.Model):
 
     else:
       print('primary for composite {} {} {} channel {} has already been created.'.format(self.composite.experiment.name, self.composite.series.name, self.composite.id_token, self.name))
+      return '{}-primary'.format(self.name)
 
   def region_primary(self):
     if self.composite.channels.filter(name='{}-regions'.format(self.name)).count()==0:
@@ -368,6 +352,23 @@ class MaskChannel(models.Model):
   def __str__(self):
     return 'mask {} > {}'.format(self.composite.id_token, self.name)
 
+  def get_or_create_mask(self, array, t, r=0, c=0, rs=None, cs=None, path=None):
+    # self.defaults
+    rs = self.composite.series.rs if rs is None else rs
+    cs = self.composite.series.cs if cs is None else cs
+    path = self.composite.experiment.composite_path if path is None else path
+
+    # build
+    mask, mask_created = self.masks.get_or_create(experiment=self.composite.experiment, series=self.composite.series, composite=self.composite, t=t)
+    mask.set_origin(r,c,t)
+    mask.set_extent(rs,cs)
+
+    mask.array = array
+    mask.save_array(path, self.composite.templates.get(name='mask'))
+    mask.save()
+
+    return mask, mask_created
+
 class Mask(models.Model):
   # connections
   experiment = models.ForeignKey(Experiment, related_name='masks')
@@ -415,6 +416,19 @@ class Mask(models.Model):
     array = imread(self.url)
     self.array = exposure.rescale_intensity(array * 1.0) * (len(np.unique(array)) - 1).astype(int) # rescale to contain integer grayscale id's.
     return self.array
+
+  def save_array(self, root, template):
+    # 1. iterate through planes in bulk
+    # 2. for each plane, save plane based on root, template
+    # 3. create path with url and add to gon
+
+    if not os.path.exists(root):
+      os.makedirs(root)
+
+    self.file_name = template.rv.format(self.experiment.name, self.series.name, self.channel.name, self.t)
+    self.url = os.path.join(root, self.file_name)
+
+    imsave(self.url, self.array)
 
 ### DATA
 class DataFile(models.Model):

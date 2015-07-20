@@ -141,8 +141,8 @@ class Experiment(models.Model):
     unique_key = '{}{}-{}'.format(primary_channel_name, secondary_channel_name, random_string())
 
     # 2. format and save file
-    pipeline_text = marker_pipeline('{}_s{}_{}_'.format(self.name, series_name, unique_key), unique_key, primary_channel_name, secondary_channel_name)
-    with open(os.path.join(self.cp_path, 'markers.cppipe')) as open_pipeline_file:
+    pipeline_text = marker_pipeline('{}_s{}_ch{}_'.format(self.name, series_name, unique_key), unique_key, primary_channel_name, secondary_channel_name)
+    with open(os.path.join(self.pipeline_path, 'markers.cppipe'), 'w+') as open_pipeline_file:
       open_pipeline_file.write(pipeline_text)
 
     return unique_key
@@ -153,7 +153,7 @@ class Experiment(models.Model):
 
     # 2. format and save file
     pipeline_text = region_pipeline(unique_key, primary_channel_name, secondary_channel_name)
-    with open(os.path.join(self.cp_path, 'regions.cppipe')) as open_pipeline_file:
+    with open(os.path.join(self.pipeline_path, 'regions.cppipe')) as open_pipeline_file:
       open_pipeline_file.write(pipeline_text)
 
     return unique_key
